@@ -1,4 +1,4 @@
-#Chinese-Chess-AI-Based-on-MiniMAX-with-Alpha-Beta-Pruning
+# Chinese-Chess-AI-Based-on-MiniMAX-with-Alpha-Beta-Pruning
 
 This is a teamwork contributed to Wei Zhenyuan, 
 Zhang Cui, Tao Kai and me. 
