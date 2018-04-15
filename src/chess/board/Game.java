@@ -1,6 +1,7 @@
 package chess.board;
 import chess.util.Step;
 
+// Unused interface
 public interface Game {
 	public static enum State {FIRSTMOVEWIN, SECONDMOVEWIN, DRAW, UNFINISH};
 	

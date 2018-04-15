@@ -3,7 +3,6 @@ package chess.board;
 import java.util.ArrayList;
 import java.util.List;
 import chess.AI.ChessEngine;
-import chess.AI.Searchable;
 import chess.piece.Advisor;
 import chess.piece.Bking;
 import chess.piece.Cannon;
@@ -15,7 +14,7 @@ import chess.piece.Rook;
 import chess.piece.Soldier;
 import chess.util.Step;
 
-public class ChessBoard extends Searchable{
+public class ChessBoard {
 	// 定义当前棋局状态
 	public static enum State {REDWIN, BLACKWIN, DRAW, UNFINISH};
 	State state;
@@ -177,10 +176,7 @@ public class ChessBoard extends Searchable{
 		return board.clone();
 	}
 	
-	// 返回当前局面总分
-	public int getValue() {
-		return evaluate(board,this);
-	}
+
 	
 	// AI相关功能实现完毕
 	
@@ -271,6 +267,12 @@ public class ChessBoard extends Searchable{
 	
 	// 以下是被弃用的方法和数据成员
 	
+	// 已在Chess.AI.Position中实现
+	// 返回当前局面总分
+//	public int getValue() {
+//		return evaluate(board,this);
+//	}
+
 	// 实现上存在麻烦
 	// 红方是否被将军
 //		private boolean isRedBeChecked;

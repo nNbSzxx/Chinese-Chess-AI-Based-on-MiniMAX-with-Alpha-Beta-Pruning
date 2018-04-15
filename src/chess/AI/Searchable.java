@@ -2,12 +2,11 @@ package chess.AI;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import chess.board.ChessBoard;
 import chess.piece.ChessPieces;
 import chess.util.Step;
 
+// Unused class
 public class Searchable {
 	int INF = 18888;
 	//记录此位置的灵活性的数组
@@ -212,3 +211,4 @@ public class Searchable {
 //	Step[] generateAllNextState(ChessBoard board);
 //	boolean isEndState(ChessBoard board);
 }
+
