@@ -187,6 +187,205 @@ public final class Position {
 				pieceLoc[Board.BLACK_KING] == 0);
 	}
 	
+	// 判断是否被将军
+	public boolean isChecked(int side) {
+		assert (side == Board.RED_SIDE || side == Board.BLACK_SIDE);
+		int myKing = (side == Board.RED_SIDE)? Board.RED_KING: Board.BLACK_KING;
+		int myKingLoc = getPieceLoc(myKing);
+		assert (Board.inFort(myKingLoc));
+		
+		// 可能被帅车炮马兵将军，不可能被士象将军
+		return isCheckedByKingOrRook(myKing, myKingLoc) || 
+			   isCheckedByCannon(myKing, myKingLoc) || 
+			   isCheckedByKnight(myKing, myKingLoc) ||
+			   isCheckedByPawn(myKing, myKingLoc);
+	}
+	
+	// 以下是判断将帅被特定棋子将军的方法
+	private boolean isCheckedByKingOrRook(int myKing, int myKingLoc) {
+		// 把帅看作车，判断能否吃到对方的车或者将
+		// 将帅不可能处于同一行
+		int rankBiggestCapLoc = 
+				MoveTable.getRankBiggestRookCap(myKingLoc, getRankBit(Board.getRank(myKingLoc)));
+		assert (Board.inBoard(rankBiggestCapLoc));
+		assert (Board.getRank(rankBiggestCapLoc) == Board.getRank(myKingLoc));
+		int capedPiece = getPiece(rankBiggestCapLoc);
+		assert (capedPiece != 0);
+		if (!Board.isPiecesSameSide(capedPiece, myKing)) {
+			int pieceType = Board.getPieceType(capedPiece);
+			assert (pieceType != Board.KING_MASK);
+			if (pieceType == Board.ROOK_MASK) {
+				return true;
+			}
+		}
+		int rankSmallestCapLoc = 
+				MoveTable.getRankSmallestRookCap(myKingLoc, getRankBit(Board.getRank(myKingLoc)));
+		assert (Board.inBoard(rankSmallestCapLoc));
+		assert (Board.getRank(rankSmallestCapLoc) == Board.getRank(myKingLoc));
+		capedPiece = getPiece(rankSmallestCapLoc);
+		assert (capedPiece != 0);
+		if (!Board.isPiecesSameSide(capedPiece, myKing)) {
+			int pieceType = Board.getPieceType(capedPiece);
+			assert (pieceType != Board.KING_MASK);
+			if (pieceType == Board.ROOK_MASK) {
+				return true;
+			}
+		}
+		int fileBiggestCapLoc = 
+				MoveTable.getFileBiggestRookCap(myKingLoc, getFileBit(Board.getFile(myKingLoc)));
+		assert (Board.inBoard(fileBiggestCapLoc));
+		assert (Board.getFile(fileBiggestCapLoc) == Board.getFile(myKingLoc));
+		capedPiece = getPiece(fileBiggestCapLoc);
+		assert (capedPiece != 0);
+		if (!Board.isPiecesSameSide(capedPiece, myKing)) {
+			int pieceType = Board.getPieceType(capedPiece);
+			if (pieceType == Board.ROOK_MASK || pieceType == Board.KING_MASK) {
+				return true;
+			}
+		}
+		int fileSmallestCapLoc = 
+				MoveTable.getFileSmallestRookCap(myKingLoc, getFileBit(Board.getFile(myKingLoc)));
+		assert (Board.inBoard(fileSmallestCapLoc));
+		assert (Board.getFile(fileSmallestCapLoc) == Board.getFile(myKingLoc));
+		capedPiece = getPiece(fileSmallestCapLoc);
+		assert (capedPiece != 0);
+		if (!Board.isPiecesSameSide(capedPiece, myKing)) {
+			int pieceType = Board.getPieceType(capedPiece);
+			if (pieceType == Board.ROOK_MASK || pieceType == Board.KING_MASK) {
+				return true;
+			}
+		}
+		return false;
+	}
+	private boolean isCheckedByCannon(int myKing, int myKingLoc) {
+		// 把帅看作炮，判断能否吃到对方的炮
+		int rankBiggestCapLoc = 
+				MoveTable.getRankBiggestCannonCap(myKingLoc, getRankBit(Board.getRank(myKingLoc)));
+		assert (Board.inBoard(rankBiggestCapLoc));
+		assert (Board.getRank(rankBiggestCapLoc) == Board.getRank(myKingLoc));
+		int capedPiece = getPiece(rankBiggestCapLoc);
+		assert (capedPiece != 0);
+		if (!Board.isPiecesSameSide(capedPiece, myKing)) {
+			int pieceType = Board.getPieceType(capedPiece);
+			if (pieceType == Board.CANNON_MASK) {
+				return true;
+			}
+		}
+		int rankSmallestCapLoc = 
+				MoveTable.getRankSmallestCannonCap(myKingLoc, getRankBit(Board.getRank(myKingLoc)));
+		assert (Board.inBoard(rankSmallestCapLoc));
+		assert (Board.getRank(rankSmallestCapLoc) == Board.getRank(myKingLoc));
+		capedPiece = getPiece(rankSmallestCapLoc);
+		assert (capedPiece != 0);
+		if (!Board.isPiecesSameSide(capedPiece, myKing)) {
+			int pieceType = Board.getPieceType(capedPiece);
+			if (pieceType == Board.CANNON_MASK) {
+				return true;
+			}
+		}
+		int fileBiggestCapLoc = 
+				MoveTable.getFileBiggestCannonCap(myKingLoc, getFileBit(Board.getFile(myKingLoc)));
+		assert (Board.inBoard(fileBiggestCapLoc));
+		assert (Board.getFile(fileBiggestCapLoc) == Board.getFile(myKingLoc));
+		capedPiece = getPiece(fileBiggestCapLoc);
+		assert (capedPiece != 0);
+		if (!Board.isPiecesSameSide(capedPiece, myKing)) {
+			int pieceType = Board.getPieceType(capedPiece);
+			if (pieceType == Board.CANNON_MASK) {
+				return true;
+			}
+		}
+		int fileSmallestCapLoc = 
+				MoveTable.getFileSmallestCannonCap(myKingLoc, getFileBit(Board.getFile(myKingLoc)));
+		assert (Board.inBoard(fileSmallestCapLoc));
+		assert (Board.getFile(fileSmallestCapLoc) == Board.getFile(myKingLoc));
+		capedPiece = getPiece(fileSmallestCapLoc);
+		assert (capedPiece != 0);
+		if (!Board.isPiecesSameSide(capedPiece, myKing)) {
+			int pieceType = Board.getPieceType(capedPiece);
+			if (pieceType == Board.CANNON_MASK) {
+				return true;
+			}
+		}
+		return false;
+	}
+	private boolean isCheckedByKnight(int myKing, int myKingLoc) {
+		// 把帅看作马，检查走日字后的坐标有没有马，若有马且马走到帅不蹩腿，则将军
+		for (int id = 0; id < 8; id ++) {
+			int capedPieceLoc = myKingLoc + Board.KNIGHT_STEP[id];
+			int capedPiece = getPiece(capedPieceLoc);
+			if (capedPiece != 0 &&
+					!Board.isPiecesSameSide(capedPiece, myKing) &&
+					Board.getPieceType(capedPiece) == Board.KNIGHT_MASK) {
+				assert (Board.getPieceType(capedPiece) == Board.KNIGHT_MASK);
+				int reverseId = Board.getKnightReverseStepId(id);
+				assert (Board.getPieceType
+							(getPiece(MoveTable.knightMoveTable
+							[capedPieceLoc][reverseId])) == Board.KING_MASK);
+				if (getPiece(MoveTable.knightPinTable
+						[capedPieceLoc][reverseId]) == 0) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	private boolean isCheckedByPawn(int myKing, int myKingLoc) {
+		// 在帅的攻击范围内的卒一定是对方过河卒
+		int capedPiece;
+		int capedPieceLoc;
+		if (Board.getPieceSide(myKing) == Board.RED_SIDE) {
+			capedPieceLoc = myKingLoc - Board.rankDis(1);
+			capedPiece = getPiece(capedPieceLoc);
+			assert (Board.inBoard(capedPieceLoc));
+		} else {
+			capedPieceLoc = myKingLoc + Board.rankDis(1);
+			capedPiece = getPiece(capedPieceLoc);
+			assert (Board.inBoard(capedPieceLoc));
+		}
+		if (Board.getPieceType(capedPiece) == Board.PAWN_MASK) {
+			assert (capedPiece != 0);
+//			if (Board.isPiecesSameSide(myKing, capedPiece)) {
+//				System.out.print("In chess.AI.Position.isCheckedByPawn: ");
+//				System.out.println("King: " + myKing + " Pawn: " + capedPiece);
+//				System.out.print(" KingLoc: x: " + (Board.getRank(myKingLoc) - Board.RANK_TOP) + 
+//						" y: " + (Board.getFile(myKingLoc) - Board.FILE_LEFT));
+//				System.out.println(" PawnLoc: x: " + (Board.getRank(capedPieceLoc) - Board.RANK_TOP) + 
+//						" y: " + (Board.getFile(capedPieceLoc) - Board.FILE_LEFT));
+//			}
+			assert ((Board.getRank(capedPieceLoc) == 6 + Board.RANK_TOP && Board.getFile(capedPieceLoc) == 4 + Board.FILE_LEFT) || 
+					(Board.getRank(capedPieceLoc) == 3 + Board.RANK_TOP && Board.getFile(capedPieceLoc) == 4 + Board.FILE_LEFT) ||
+					!Board.isPiecesSameSide(myKing, capedPiece));
+			return true;
+		}
+		for (int i = -1; i <= 1; i += 2) {
+			capedPieceLoc = myKingLoc + i;
+			capedPiece = getPiece(capedPieceLoc);
+			if (Board.getPieceType(capedPiece) == Board.PAWN_MASK) {
+				assert (capedPiece != 0);
+				assert (!Board.isPiecesSameSide(myKing, capedPiece));
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	// 判断是否将帅对脸
+	public boolean doKingFaceKing() {
+		int redKingLoc = getPieceLoc(Board.RED_KING);
+		int blackKingLoc = getPieceLoc(Board.BLACK_KING);
+		if (redKingLoc == 0 || blackKingLoc == 0) {
+			return false;
+		}
+//		System.out.println(redKingLoc);
+		assert (Board.inFort(redKingLoc));
+		assert (Board.inFort(blackKingLoc));
+		// 判断的思想是把帅看作是车，判断这样被当作车的帅是否能吃到将
+		return (Board.getFile(redKingLoc) == Board.getFile(blackKingLoc) &&
+				MoveTable.getFileSmallestRookCap
+					(redKingLoc, getFileBit(Board.getFile(redKingLoc))) == blackKingLoc);
+	}
+	
 	// 移动棋子
 	private void movePiece(int from, int to) {
 //		System.out.println("In chess.AI.Position.movePiece: ");

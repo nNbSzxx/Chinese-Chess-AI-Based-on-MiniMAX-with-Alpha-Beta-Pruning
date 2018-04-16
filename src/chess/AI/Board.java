@@ -247,6 +247,10 @@ public final class Board {
 				((piece & PIECE_SIDE_MASK) >> 3) == BLACK_SIDE);
 		return ((piece & PIECE_SIDE_MASK) >> 3);
 	}
+	// 接收马从from到to的预处理招法下标，返回从to到from的预处理招法下标
+	public static int getKnightReverseStepId(int id) {
+		return 7 - id;
+	}
 	public static boolean isIndexSameHalf(int loc1, int loc2) {
 		return (((loc1 ^ loc2) & INDEX_SIDE_MASK) == 0);
 	}

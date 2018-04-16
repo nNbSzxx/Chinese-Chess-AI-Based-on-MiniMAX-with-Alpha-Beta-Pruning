@@ -28,18 +28,6 @@ public final class MoveGenerator {
 		return (step & TOLOC_MASK);
 	}
 	
-	// 判断是否将帅对脸
-	public static boolean doKingFaceKing(Position position) {
-		int redKingLoc = position.getPieceLoc(Board.RED_KING);
-		int blackKingLoc = position.getPieceLoc(Board.BLACK_KING);
-		assert (Board.inFort(redKingLoc));
-		assert (Board.inFort(blackKingLoc));
-		// 判断的思想是把帅看作是车，判断这样被当作车的帅是否能吃到将
-		return (Board.getFile(redKingLoc) == Board.getFile(blackKingLoc) &&
-				MoveTable.getFileSmallestRookCap
-					(redKingLoc, position.getFileBit(Board.getFile(redKingLoc))) == blackKingLoc);
-	}
-	
 	// 产生所有吃子招法，确保吃子都是吃的对方的子，但不确保走棋之后不被将军，将帅对脸留待搜索时检查
 	public static List<Integer> getCapMove(Position position) {
 		List<Integer> list = new ArrayList<>(32);

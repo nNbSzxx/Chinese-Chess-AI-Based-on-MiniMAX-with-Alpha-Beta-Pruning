@@ -325,6 +325,7 @@ public class ChessView extends JFrame implements MouseListener{
 		
 	}
 	public static void main(String args[]){
+//		assert false;
 		ChessView c = new ChessView();
 		c.initial();
 		

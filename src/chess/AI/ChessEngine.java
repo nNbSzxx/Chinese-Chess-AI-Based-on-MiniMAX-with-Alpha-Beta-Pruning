@@ -53,6 +53,10 @@ public class ChessEngine {
 		assert (toY >= 0 && toY < ChessBoard.MAXCOL);
 		return new Step(fromX, fromY, toX, toY);
 	}
+	
+	public static void main(String[] args) {
+//		assert false;
+	}
 
 }
 
