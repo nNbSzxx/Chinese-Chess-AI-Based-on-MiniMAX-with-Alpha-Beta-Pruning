@@ -28,7 +28,7 @@ public final class Search {
 	private static int searchRoot(int depth, int alpha, int beta, Position position) {
 		// 判断到棋局终局，而又轮到己方行棋，说明已输
 		if (position.isEnd()) {
-			return -Evaluator.WIN_VALUE;
+			return NO_LEGAL_MOVE;
 		}
 		int bestMove = NO_LEGAL_MOVE;
 		List<Integer> list = MoveGenerator.getCapMove(position);
@@ -36,7 +36,7 @@ public final class Search {
 			int from = MoveGenerator.getFromLoc(step);
 			int to = MoveGenerator.getToLoc(step);
 			position.move(from, to);
-			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position);
+			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position, 1);
 			position.undoMove();
 			if (val > alpha) {
 				alpha = val;
@@ -48,7 +48,7 @@ public final class Search {
 			int from = MoveGenerator.getFromLoc(step);
 			int to = MoveGenerator.getToLoc(step);
 			position.move(from, to);
-			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position);
+			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position, 1);
 			position.undoMove();
 			if (val > alpha) {
 				alpha = val;
@@ -64,11 +64,12 @@ public final class Search {
 		return 0;
 	}
 	
-	// 超出上下界的alpha-beta搜索
-	private static int naiveAlphaBeta(int depth, int alpha, int beta, Position position) {
+	// 超出上下界的alpha-beta搜索，curDepth表示当前距离根节点的距离
+	private static int naiveAlphaBeta(int depth, int alpha, int beta, Position position, int curDepth) {
 		// 判断到棋局终局，而又轮到己方行棋，说明已输
+		// 为了能搜索到最少步数杀棋棋步，避免长将
 		if (position.isEnd()) {
-			return -Evaluator.WIN_VALUE + (NAIVE_ALPHABETA_DEPTH - depth);
+			return -Evaluator.WIN_VALUE + curDepth;
 		}
 		if (depth == 0) {
 			return position.evaluate();
@@ -79,7 +80,7 @@ public final class Search {
 			int from = MoveGenerator.getFromLoc(step);
 			int to = MoveGenerator.getToLoc(step);
 			position.move(from, to);
-			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position);
+			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position, curDepth + 1);
 			position.undoMove();
 			if (val >= beta) {
 				return val;
@@ -94,7 +95,7 @@ public final class Search {
 			int from = MoveGenerator.getFromLoc(step);
 			int to = MoveGenerator.getToLoc(step);
 			position.move(from, to);
-			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position);
+			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position, curDepth + 1);
 			position.undoMove();
 			if (val >= beta) {
 				return val;
