@@ -13,22 +13,22 @@ public class ChessEngine {
 	
 	// AI走棋函数
 	public Step generateAMove() {
-		System.out.println("In chess.AI.ChessEngine.generateAMove: ");
-		System.out.println("Now is " + (position.isRedMove()? "Red Turn" : "Black Turn"));
+//		System.out.print("In chess.AI.ChessEngine.generateAMove: ");
+//		System.out.println("Now is " + (position.isRedMove()? "Red Turn" : "Black Turn"));
 		int bestStep = Search.mainSearch(position);
-		System.out.println("The best step id: " + bestStep);
+//		System.out.print("The best step id: " + bestStep + "   ");
 		int from = MoveGenerator.getFromLoc(bestStep);
-		System.out.println("Pick: " + position.getPiece(from));
+//		System.out.print("Pick: " + position.getPiece(from) + "   ");
 		int to = MoveGenerator.getToLoc(bestStep);
-		System.out.println("ToLocPiece: " + position.getPiece(to));
+//		System.out.print("ToLocPiece: " + position.getPiece(to) + "   ");
 		assert (Board.inBoard(from));
 		assert (Board.inBoard(to));
 		Step step = transformStep(from, to);
 		
 //		System.out.println((Board.getRank(from) - Board.RANK_TOP) + " " + (Board.getFile(from) - Board.FILE_LEFT)
 //				   + " " + (Board.getRank(to) - Board.RANK_TOP) + " " + (Board.getFile(to)- Board.FILE_LEFT));
-		System.out.println("fromX: " + step.getFromX() + " fromY: " + step.getFromY() + " toX: "
-							+ step.getToX() + " toY: " + step.getToY());
+//		System.out.println("fromX: " + step.getFromX() + " fromY: " + step.getFromY() + " toX: "
+//							+ step.getToX() + " toY: " + step.getToY());
 		return step;
 	}
 	

@@ -77,7 +77,6 @@ public class ChessBoard {
 			} else {
 				System.out.print("pick null ");
 			}
-			System.out.println("");
 		} else {
 			System.out.println("Chess Board Index Out Of Range in isMoveLegal!");
 			System.out.printf("Index: %d %d %d %d", 

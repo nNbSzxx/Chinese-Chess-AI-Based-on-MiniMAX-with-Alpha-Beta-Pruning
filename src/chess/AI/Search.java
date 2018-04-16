@@ -3,13 +3,25 @@ package chess.AI;
 import java.util.List;
 
 public final class Search {
-
+	// 无合法棋步时返回的编号
 	public static final int NO_LEGAL_MOVE = 0;
+	// 依层数搜索时，朴素alpha-beta搜索的最大深度
 	public static final int NAIVE_ALPHABETA_DEPTH = 5;
+	// 按照时间长短搜索时，最长思考时间
+	public static final int THINKING_TIME = 3;
 	// unfinished
 	public static int mainSearch(Position position) {
-		return searchRoot(NAIVE_ALPHABETA_DEPTH, -Evaluator.WIN_VALUE, 
-				Evaluator.WIN_VALUE, position);
+		long beginTime = System.currentTimeMillis();
+		int bestStep = NO_LEGAL_MOVE;
+		int dep;
+		for (dep = 1; ; ++ dep) {
+			bestStep = searchRoot(dep, -Evaluator.WIN_VALUE, Evaluator.WIN_VALUE, position);
+			if (System.currentTimeMillis() - beginTime >= THINKING_TIME * 1000) {
+				break;
+			}
+		}
+		System.out.println("In chess.AI.Search.mainSearch: deepest depth " + dep);
+		return bestStep;
 	}
 	
 	// 返回的是最好的棋步
