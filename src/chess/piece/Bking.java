@@ -37,8 +37,10 @@ public class Bking extends ChessPieces{
 				{
 					if(board.getPiece(i, j)!= null )
 					{
-						if(board.getPiece(i, j).getName() == "R_King") 
-							bx = i;by = j;
+						if(board.getPiece(i, j).getName() == "R_King") {
+							bx = i;
+							by = j;
+						}
 					}
 					
 				}

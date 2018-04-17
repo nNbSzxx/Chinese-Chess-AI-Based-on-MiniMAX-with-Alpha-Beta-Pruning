@@ -28,9 +28,15 @@ public final class MoveGenerator {
 		return (step & TOLOC_MASK);
 	}
 	
+	public static List<Integer> getAllMove(Position position) {
+		List<Integer> list = getCapMove(position);
+		list.addAll(getNonCapMove(position));
+		return list;
+	}
+	
 	// 产生所有吃子招法，确保吃子都是吃的对方的子，但不确保走棋之后不被将军，将帅对脸留待搜索时检查
 	public static List<Integer> getCapMove(Position position) {
-		List<Integer> list = new ArrayList<>(32);
+		List<Integer> list = new ArrayList<>(45);
 		int side = (position.isRedMove() ? Board.RED_SIDE : Board.BLACK_SIDE);
 		
 		for (int i = 0; i < Board.PIECE_ARRAY[side].length; ++ i) {
@@ -81,7 +87,7 @@ public final class MoveGenerator {
 	
 	// 产生所有吃子招法，确保吃子都是吃的对方的子，但不确保走棋之后不被将军，将帅对脸留待搜索时检查
 	public static List<Integer> getNonCapMove(Position position) {
-		List<Integer> list = new ArrayList<>(32);
+		List<Integer> list = new ArrayList<>(45);
 		int side = (position.isRedMove() ? Board.RED_SIDE : Board.BLACK_SIDE);
 		
 		for (int i = 0; i < Board.PIECE_ARRAY[side].length; ++ i) {
@@ -414,7 +420,7 @@ public final class MoveGenerator {
 		}
 	}
 	
-	private static int makeStep(int from, int to) {
+	public static int makeStep(int from, int to) {
 		return ((from << FROMLOC_SHIFT) | to);
 	}
 	
