@@ -22,7 +22,7 @@ public final class Search {
 		long beginTime = System.currentTimeMillis();
 		int bestStep = NO_LEGAL_MOVE;
 		int dep;
-		for (dep = 1; ; ++ dep) {
+		for (dep = 1; dep <= 7; ++ dep) {
 			bestStep = searchRoot(dep, -Evaluator.WIN_VALUE, Evaluator.WIN_VALUE, position);
 			timeCost = System.currentTimeMillis() - beginTime;
 			if (timeCost >= THINKING_TIME * 1000) {
@@ -44,6 +44,7 @@ public final class Search {
 		int bestVal = -Evaluator.WIN_VALUE;
 		int bestMove = NO_LEGAL_MOVE;
 		StepDealer dealer = new StepDealer(position);
+//		System.out.println("In chess.AI.Search.searchRoot: steps " + dealer.getStepCount());
 		for (int step = dealer.getAStep(); step != NO_LEGAL_MOVE; step = dealer.getAStep()) {
 			int from = MoveGenerator.getFromLoc(step);
 			int to = MoveGenerator.getToLoc(step);

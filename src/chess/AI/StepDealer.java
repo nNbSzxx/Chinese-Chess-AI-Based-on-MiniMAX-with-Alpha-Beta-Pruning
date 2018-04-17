@@ -41,4 +41,8 @@ public final class StepDealer {
 		}
 	}
 	
+	public int getStepCount() {
+		return steps.size();
+	}
+	
 }

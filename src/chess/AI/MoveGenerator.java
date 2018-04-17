@@ -19,6 +19,10 @@ public final class MoveGenerator {
 	public static final int FROMLOC_MASK = 0xff00;
 	// 取得终点坐标的掩码
 	public static final int TOLOC_MASK = 0x00ff;
+	// 用于存储当前吃子招法
+	private static List<Integer> capMoves = new ArrayList<>(16);
+	// 用于存储当前非吃子招法
+	private static List<Integer> nonCapMoves = new ArrayList<>(64);
 	
 	// 从step中取得from与to坐标
 	public static int getFromLoc(int step) {
@@ -29,14 +33,35 @@ public final class MoveGenerator {
 	}
 	
 	public static List<Integer> getAllMove(Position position) {
-		List<Integer> list = getCapMove(position);
-		list.addAll(getNonCapMove(position));
+		List<Integer> list = new ArrayList<>(80);
+		generateCapMove(position, true);
+		generateNonCapMove(position, true);
+		list.addAll(capMoves);
+		list.addAll(nonCapMoves);
 		return list;
 	}
 	
+	// 获得所有吃子招法，并根据参数决定是否将非吃子招法缓存
+	// 注意！以下两个方法返回的都是类变量而不是类变量的副本！
+	public static List<Integer> getCapMove(Position position, boolean doCacheNonCapMove) {
+		generateCapMove(position, doCacheNonCapMove);
+		return capMoves;
+	}
+	public static List<Integer> getNonCapMove(Position position, boolean doUseNonCapCache) {
+		generateNonCapMove(position, doUseNonCapCache);
+		return nonCapMoves;
+	}
+	
 	// 产生所有吃子招法，确保吃子都是吃的对方的子，但不确保走棋之后不被将军，将帅对脸留待搜索时检查
-	public static List<Integer> getCapMove(Position position) {
-		List<Integer> list = new ArrayList<>(45);
+	private static void generateCapMove(Position position, boolean doCacheNonCapMove) {
+		// 每次生成吃子招法时都要清空，否则会包含上次查询的结果
+		capMoves.clear();
+		// 如果要缓存非吃子招法，那么也要清空非吃子招法的list
+		if (doCacheNonCapMove) {
+			nonCapMoves.clear();
+		}
+		assert (capMoves.size() == 0);
+		assert (!doCacheNonCapMove || nonCapMoves.size() == 0);
 		int side = (position.isRedMove() ? Board.RED_SIDE : Board.BLACK_SIDE);
 		
 		for (int i = 0; i < Board.PIECE_ARRAY[side].length; ++ i) {
@@ -51,43 +76,45 @@ public final class MoveGenerator {
 			switch (pieceType) {
 			
 			case Board.KING_MASK:
-				generateKingCapMove(piece, from, position, list);
+				generateKingCapMove(piece, from, position, doCacheNonCapMove);
 				break;
 				
 			case Board.ROOK_MASK:
-				generateRookCapMove(piece, from, position, list);
+				generateRookCapMove(piece, from, position);
 				break;
 				
 			case Board.CANNON_MASK:
-				generateCannonCapMove(piece, from, position, list);
+				generateCannonCapMove(piece, from, position);
 				break;
 				
 			case Board.KNIGHT_MASK:
-				generateKnightCapMove(piece, from, position, list);
+				generateKnightCapMove(piece, from, position, doCacheNonCapMove);
 				break;
 				
 			case Board.PAWN_MASK:
-				generatePawnCapMove(side, piece, from, position, list);
+				generatePawnCapMove(side, piece, from, position, doCacheNonCapMove);
 				break;
 				
 			case Board.BISHOP_MASK:
-				generateBishopCapMove(piece, from, position, list);
+				generateBishopCapMove(piece, from, position, doCacheNonCapMove);
 				break;
 			
 			case Board.ADVISOR_MASK:
-				generateAdvisorCapMove(piece, from, position, list);
+				generateAdvisorCapMove(piece, from, position, doCacheNonCapMove);
 				break;
 			default:
 				assert false;
 				break;
 			}
 		}
-		return list;
 	}
 	
-	// 产生所有吃子招法，确保吃子都是吃的对方的子，但不确保走棋之后不被将军，将帅对脸留待搜索时检查
-	public static List<Integer> getNonCapMove(Position position) {
-		List<Integer> list = new ArrayList<>(45);
+	// 产生所有非吃子招法，但不确保走棋之后不被将军，将帅对脸留待搜索时检查
+	private static void generateNonCapMove(Position position, boolean doUseNonCapCache) {
+		if (!doUseNonCapCache) {
+			nonCapMoves.clear();
+		}
+		assert (doUseNonCapCache || nonCapMoves.size() == 0);
 		int side = (position.isRedMove() ? Board.RED_SIDE : Board.BLACK_SIDE);
 		
 		for (int i = 0; i < Board.PIECE_ARRAY[side].length; ++ i) {
@@ -102,41 +129,50 @@ public final class MoveGenerator {
 			switch (pieceType) {
 			
 			case Board.KING_MASK:
-				generateKingNonCapMove(piece, from, position, list);
-				break;
-				
-			case Board.ROOK_MASK:
-			case Board.CANNON_MASK:
-				generateStraightNonCapMove(piece, from, position, list);
+				if (!doUseNonCapCache) {
+					generateKingNonCapMove(piece, from, position);
+				}
 				break;
 				
 			case Board.KNIGHT_MASK:
-				generateKnightNonCapMove(piece, from, position, list);
+				if (!doUseNonCapCache) {
+					generateKnightNonCapMove(piece, from, position);
+				}
 				break;
 				
 			case Board.PAWN_MASK:
-				generatePawnNonCapMove(side, piece, from, position, list);
+				if (!doUseNonCapCache) {
+					generatePawnNonCapMove(side, piece, from, position);
+				}
 				break;
 				
 			case Board.BISHOP_MASK:
-				generateBishopNonCapMove(piece, from, position, list);
+				if (!doUseNonCapCache) {
+					generateBishopNonCapMove(piece, from, position);
+				}
 				break;
 			
 			case Board.ADVISOR_MASK:
-				generateAdvisorNonCapMove(piece, from, position, list);
+				if (!doUseNonCapCache) {
+					generateAdvisorNonCapMove(piece, from, position);
+				}
 				break;
+			
+			// 无论是否使用缓存，车炮的招法都是要生成的
+			case Board.ROOK_MASK:
+			case Board.CANNON_MASK:
+				generateStraightNonCapMove(piece, from, position);
+				break;	
+			
 			default:
 				assert false;
 				break;
 			}
-		}
-		
-				
-		return list;
+		}		
 	}
 	
 	// 产生各个棋子吃子招法
-	private static void generateKingCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateKingCapMove(int piece, int from, Position position, boolean doCacheNonCapMove) {
 		assert (Board.getPieceType(piece) == Board.KING_MASK);
 		assert (Board.inFort(from));
 		assert (Board.isPieceInOwnHalf(piece, from));
@@ -144,13 +180,16 @@ public final class MoveGenerator {
 			int to = MoveTable.kingMoveTable[from][j];
 			assert (Board.inFort(to));
 			assert (Board.isPieceInOwnHalf(piece, to));
-			if (position.getPiece(to) != 0 &&
-					!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-				list.add(makeStep(from, to));
+			if (position.getPiece(to) != 0) {
+				if (!Board.isPiecesSameSide(piece, position.getPiece(to))) {
+					capMoves.add(makeStep(from, to));
+				}
+			} else if (doCacheNonCapMove) {
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 	}
-	private static void generateRookCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateRookCapMove(int piece, int from, Position position) {
 		assert (Board.getPieceType(piece) == Board.ROOK_MASK);
 		assert (Board.inBoard(from));
 		// 行吃子
@@ -160,7 +199,7 @@ public final class MoveGenerator {
 		assert (Board.getRank(to) == Board.getRank(from));
 		if (position.getPiece(to) != 0 &&
 				!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-			list.add(makeStep(from, to));
+			capMoves.add(makeStep(from, to));
 		}
 		to = MoveTable.getRankBiggestRookCap(from, 
 				position.getRankBit(Board.getRank(from)));
@@ -168,7 +207,7 @@ public final class MoveGenerator {
 		assert (Board.getRank(to) == Board.getRank(from));
 		if (position.getPiece(to) != 0 &&
 				!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-			list.add(makeStep(from, to));
+			capMoves.add(makeStep(from, to));
 		}
 		// 列吃子
 		to = MoveTable.getFileSmallestRookCap(from, 
@@ -177,7 +216,7 @@ public final class MoveGenerator {
 		assert (Board.getFile(to) == Board.getFile(from));
 		if (position.getPiece(to) != 0 &&
 				!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-			list.add(makeStep(from, to));
+			capMoves.add(makeStep(from, to));
 		}
 		to = MoveTable.getFileBiggestRookCap(from, 
 				position.getFileBit(Board.getFile(from)));
@@ -185,10 +224,10 @@ public final class MoveGenerator {
 		assert (Board.getFile(to) == Board.getFile(from));
 		if (position.getPiece(to) != 0 &&
 				!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-			list.add(makeStep(from, to));
+			capMoves.add(makeStep(from, to));
 		}
 	}
-	private static void generateCannonCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateCannonCapMove(int piece, int from, Position position) {
 		assert (Board.getPieceType(piece) == Board.CANNON_MASK);
 		assert (Board.inBoard(from));
 		// 行吃子
@@ -198,7 +237,7 @@ public final class MoveGenerator {
 		assert (Board.getRank(to) == Board.getRank(from));
 		if (position.getPiece(to) != 0 &&
 				!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-			list.add(makeStep(from, to));
+			capMoves.add(makeStep(from, to));
 		}
 		to = MoveTable.getRankBiggestCannonCap(from, 
 				position.getRankBit(Board.getRank(from)));
@@ -206,7 +245,7 @@ public final class MoveGenerator {
 		assert (Board.getRank(to) == Board.getRank(from));
 		if (position.getPiece(to) != 0 &&
 				!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-			list.add(makeStep(from, to));
+			capMoves.add(makeStep(from, to));
 		}
 		// 列吃子
 		to = MoveTable.getFileSmallestCannonCap(from, 
@@ -215,7 +254,7 @@ public final class MoveGenerator {
 		assert (Board.getFile(to) == Board.getFile(from));
 		if (position.getPiece(to) != 0 &&
 				!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-			list.add(makeStep(from, to));
+			capMoves.add(makeStep(from, to));
 		}
 		to = MoveTable.getFileBiggestCannonCap(from, 
 				position.getFileBit(Board.getFile(from)));
@@ -223,10 +262,10 @@ public final class MoveGenerator {
 		assert (Board.getFile(to) == Board.getFile(from));
 		if (position.getPiece(to) != 0 &&
 				!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-			list.add(makeStep(from, to));
+			capMoves.add(makeStep(from, to));
 		}
 	}
-	private static void generateKnightCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateKnightCapMove(int piece, int from, Position position, boolean doCacheNonCapMove) {
 		assert (Board.getPieceType(piece) == Board.KNIGHT_MASK);
 		assert (Board.inBoard(from));
 		for (int j = 0; MoveTable.knightMoveTable[from][j] != 0; j ++) {
@@ -234,14 +273,18 @@ public final class MoveGenerator {
 			int pin = MoveTable.knightPinTable[from][j];
 			assert (Board.inBoard(to));
 			assert (Board.inBoard(pin));
-			if (position.getPiece(to) != 0 &&
-					position.getPiece(pin) == 0 &&
-					!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-				list.add(makeStep(from, to));
+			if (position.getPiece(pin) == 0) {
+				if (position.getPiece(to) != 0) {
+					if (!Board.isPiecesSameSide(piece, position.getPiece(to))) {
+						capMoves.add(makeStep(from, to));
+					}
+				} else if (doCacheNonCapMove) {
+					nonCapMoves.add(makeStep(from, to));
+				}
 			}
 		}
 	}
-	private static void generatePawnCapMove(int side, int piece, int from, Position position, List<Integer> list) {
+	private static void generatePawnCapMove(int side, int piece, int from, Position position, boolean doCacheNonCapMove) {
 		assert (Board.getPieceType(piece) == Board.PAWN_MASK);
 		assert (side == Board.RED_SIDE || side == Board.BLACK_SIDE);
 //		System.out.println("In chess.AI.MoveGenerator.generatePawnCapMove:");
@@ -256,13 +299,16 @@ public final class MoveGenerator {
 			assert (side == Board.BLACK_SIDE || (Board.getRank(from) >= Board.getRank(to)));
 			// 多于一步说明必然已经过河
 			assert (j == 0 || !Board.isPieceInOwnHalf(piece, from));
-			if (position.getPiece(to) != 0 &&
-					!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-				list.add(makeStep(from, to));
+			if (position.getPiece(to) != 0) {
+				if (!Board.isPiecesSameSide(piece, position.getPiece(to))) {
+					capMoves.add(makeStep(from, to));
+				}
+			} else if (doCacheNonCapMove) {
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 	}
-	private static void generateBishopCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateBishopCapMove(int piece, int from, Position position, boolean doCacheNonCapMove) {
 		assert (Board.getPieceType(piece) == Board.BISHOP_MASK);
 		assert (Board.inBoard(from));
 		assert (Board.isPieceInOwnHalf(piece, from));
@@ -272,14 +318,18 @@ public final class MoveGenerator {
 			assert Board.inBoard(to);
 			assert Board.inBoard(pin);
 			assert Board.isPieceInOwnHalf(piece, to);
-			if (position.getPiece(to) != 0 &&
-					position.getPiece(pin) == 0 &&
-					!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-				list.add(makeStep(from, to));
-			}
+			if (position.getPiece(pin) == 0) {
+				if (position.getPiece(to) != 0) {
+					if (!Board.isPiecesSameSide(piece, position.getPiece(to))) {
+						capMoves.add(makeStep(from, to));
+					}
+				} else if (doCacheNonCapMove) {
+					nonCapMoves.add(makeStep(from, to));
+				}
+			}					
 		}
 	}
-	private static void generateAdvisorCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateAdvisorCapMove(int piece, int from, Position position, boolean doCacheNonCapMove) {
 		assert Board.getPieceType(piece) == Board.ADVISOR_MASK;
 		assert Board.inFort(from);
 		assert Board.isPieceInOwnHalf(piece, from);
@@ -287,15 +337,18 @@ public final class MoveGenerator {
 			int to = MoveTable.advisorMoveTable[from][j];
 			assert Board.inFort(to);
 			assert Board.isPieceInOwnHalf(piece, to);
-			if (position.getPiece(to) != 0 &&
-					!Board.isPiecesSameSide(piece, position.getPiece(to))) {
-				list.add(makeStep(from, to));
+			if (position.getPiece(to) != 0) {
+				if (!Board.isPiecesSameSide(piece, position.getPiece(to))) {
+					capMoves.add(makeStep(from, to));
+				}
+			} else if (doCacheNonCapMove) {
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 	}
 	
 	// 产生各个棋子的非吃子招法
-	private static void generateKingNonCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateKingNonCapMove(int piece, int from, Position position) {
 		assert Board.getPieceType(piece) == Board.KING_MASK;
 		assert Board.inFort(from);
 		assert Board.isPieceInOwnHalf(piece, from);
@@ -304,11 +357,11 @@ public final class MoveGenerator {
 			assert (Board.inFort(to));
 			assert (Board.isPieceInOwnHalf(piece, to));
 			if (position.getPiece(to) == 0) {
-				list.add(makeStep(from, to));
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 	}
-	private static void generateStraightNonCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateStraightNonCapMove(int piece, int from, Position position) {
 		assert (Board.getPieceType(piece) == Board.ROOK_MASK || 
 				Board.getPieceType(piece) == Board.CANNON_MASK);
 		assert (Board.inBoard(from));
@@ -320,7 +373,7 @@ public final class MoveGenerator {
 			assert (Board.inBoard(to));
 			assert (Board.getRank(to) == Board.getRank(from));
 			if (position.getPiece(to) == 0) {
-				list.add(makeStep(from, to));
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 		for (to = from - 1;
@@ -329,7 +382,7 @@ public final class MoveGenerator {
 			assert (Board.inBoard(to));
 			assert (Board.getRank(to) == Board.getRank(from));
 			if (position.getPiece(to) == 0) {
-				list.add(makeStep(from, to));
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 		// 列移动
@@ -340,7 +393,7 @@ public final class MoveGenerator {
 			assert (Board.inBoard(to));
 			assert (Board.getFile(from) == Board.getFile(to));
 			if (position.getPiece(to) == 0) {
-				list.add(makeStep(from, to));
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 		assert (to - Board.rankDis(1) == MoveTable.getFileBiggestNonCap(from, 
@@ -352,13 +405,13 @@ public final class MoveGenerator {
 			assert (Board.inBoard(to));
 			assert (Board.getFile(from) == Board.getFile(to));
 			if (position.getPiece(to) == 0) {
-				list.add(makeStep(from, to));
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 		assert (to + Board.rankDis(1) == MoveTable.getFileSmallestNonCap(from, 
 						position.getFileBit(Board.getFile(from))));	
 	}
-	private static void generateKnightNonCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateKnightNonCapMove(int piece, int from, Position position) {
 		assert (Board.getPieceType(piece) == Board.KNIGHT_MASK);
 		assert (Board.inBoard(from));
 		for (int j = 0; MoveTable.knightMoveTable[from][j] != 0; j ++) {
@@ -368,11 +421,11 @@ public final class MoveGenerator {
 			assert (Board.inBoard(pin));
 			if (position.getPiece(to) == 0 &&
 					position.getPiece(pin) == 0) {
-				list.add(makeStep(from, to));
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 	}
-	private static void generatePawnNonCapMove(int side, int piece, int from, Position position, List<Integer> list) {
+	private static void generatePawnNonCapMove(int side, int piece, int from, Position position) {
 		assert (Board.getPieceType(piece) == Board.PAWN_MASK);
 		assert (side == Board.RED_SIDE || side == Board.BLACK_SIDE);
 		assert (Board.inBoard(from));
@@ -386,11 +439,11 @@ public final class MoveGenerator {
 			// 多于一步说明必然已经过河
 			assert (j == 0 || !Board.isPieceInOwnHalf(piece, from));
 			if (position.getPiece(to) == 0) {
-				list.add(makeStep(from, to));
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 	}
-	private static void generateBishopNonCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateBishopNonCapMove(int piece, int from, Position position) {
 		assert (Board.getPieceType(piece) == Board.BISHOP_MASK);
 		assert (Board.inBoard(from));
 		assert (Board.isPieceInOwnHalf(piece, from));
@@ -402,11 +455,11 @@ public final class MoveGenerator {
 			assert Board.isPieceInOwnHalf(piece, to);
 			if (position.getPiece(to) == 0 &&
 					position.getPiece(pin) == 0) {
-				list.add(makeStep(from, to));
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 	}
-	private static void generateAdvisorNonCapMove(int piece, int from, Position position, List<Integer> list) {
+	private static void generateAdvisorNonCapMove(int piece, int from, Position position) {
 		assert Board.getPieceType(piece) == Board.ADVISOR_MASK;
 		assert Board.inFort(from);
 		assert Board.isPieceInOwnHalf(piece, from);
@@ -415,7 +468,7 @@ public final class MoveGenerator {
 			assert Board.inFort(to);
 			assert Board.isPieceInOwnHalf(piece, to);
 			if (position.getPiece(to) == 0) {
-				list.add(makeStep(from, to));
+				nonCapMoves.add(makeStep(from, to));
 			}
 		}
 	}
