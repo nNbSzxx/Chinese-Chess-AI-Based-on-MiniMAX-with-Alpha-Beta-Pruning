@@ -32,10 +32,12 @@ public final class StepDealer {
 			return Search.NO_LEGAL_MOVE;
 		}
 	}
+	
+	// 按照历史表分值降序排列
 	private class SortedByHistoryTable implements Comparator<Integer> {
 		@Override
 		public int compare(Integer o1, Integer o2) {
-			return HistoryTable.getRecord(o1) - HistoryTable.getRecord(o2);
+			return - HistoryTable.getRecord(o1) + HistoryTable.getRecord(o2);
 		}
 	}
 	

@@ -9,13 +9,16 @@ public final class Search {
 	public static final int NAIVE_ALPHABETA_DEPTH = 5;
 	// 按照时间长短搜索时，最长思考时间
 	public static final int THINKING_TIME = 3;
-	// 记录一共搜索了多少节点
+	// 记录找出一步祺一共搜索了多少节点
 	private static long count = 0;
+	// 记录找出一步祺一共用了多长时间
 	private static long timeCost = 0;
 	
 	// 迭代加深
 	public static int mainSearch(Position position) {
 		count = 0;
+		HistoryTable.clear();
+//		HistoryTable.shrink();
 		long beginTime = System.currentTimeMillis();
 		int bestStep = NO_LEGAL_MOVE;
 		int dep;
@@ -38,38 +41,32 @@ public final class Search {
 		if (position.isEnd()) {
 			return NO_LEGAL_MOVE;
 		}
+		int bestVal = -Evaluator.WIN_VALUE;
 		int bestMove = NO_LEGAL_MOVE;
-		List<Integer> list = MoveGenerator.getCapMove(position);
-		for (int step : list) {
+		StepDealer dealer = new StepDealer(position);
+		for (int step = dealer.getAStep(); step != NO_LEGAL_MOVE; step = dealer.getAStep()) {
 			int from = MoveGenerator.getFromLoc(step);
 			int to = MoveGenerator.getToLoc(step);
 			position.move(from, to);
+			// 对脸则跳过这一步
 			if (position.doKingFaceKing()) {
 				position.undoMove();
 				continue;
 			}
 			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position, 1);
 			position.undoMove();
-			if (val > alpha) {
-				alpha = val;
+			// beta是胜利状态的价值，因此不会发生beta截断
+			if (val > bestVal) {
+				bestVal = val;
 				bestMove = step;
+				if (val > alpha) {
+					alpha = val;
+				}
 			}
 		}
-		list = MoveGenerator.getNonCapMove(position);
-		for (int step : list) {
-			int from = MoveGenerator.getFromLoc(step);
-			int to = MoveGenerator.getToLoc(step);
-			position.move(from, to);
-			if (position.doKingFaceKing()) {
-				position.undoMove();
-				continue;
-			}
-			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position, 1);
-			position.undoMove();
-			if (val > alpha) {
-				alpha = val;
-				bestMove = step;
-			}
+		// 将棋步记入历史表
+		if (bestVal >= alpha) {
+			HistoryTable.record(bestMove, depth);
 		}
 		return bestMove;
 	}
@@ -84,7 +81,7 @@ public final class Search {
 	private static int naiveAlphaBeta(int depth, int alpha, int beta, Position position, int curDepth) {
 		++ count;
 		// 判断到棋局终局，而又轮到己方行棋，说明已输
-		// 为了能搜索到最少步数杀棋棋步，避免长将
+		// 为了能搜索到最少步数杀棋棋步，避免长将，要在评估上体现出从根节点到此节点一共走了多少步
 		if (position.isEnd()) {
 			return -Evaluator.WIN_VALUE + curDepth;
 		}
@@ -92,8 +89,9 @@ public final class Search {
 			return position.evaluate();
 		}
 		int bestVal = -Evaluator.WIN_VALUE;
-		List<Integer> list = MoveGenerator.getCapMove(position);
-		for (int step : list) {
+		int bestMove = NO_LEGAL_MOVE;
+		StepDealer dealer = new StepDealer(position);
+		for (int step = dealer.getAStep(); step != NO_LEGAL_MOVE; step = dealer.getAStep()) {
 			int from = MoveGenerator.getFromLoc(step);
 			int to = MoveGenerator.getToLoc(step);
 			position.move(from, to);
@@ -103,32 +101,22 @@ public final class Search {
 			}
 			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position, curDepth + 1);
 			position.undoMove();
+			// 发生beta截断时，将该棋步记入历史表
 			if (val >= beta) {
+				HistoryTable.record(step, depth);
 				return val;
 			}
-			bestVal = (bestVal < val)? val : bestVal;
-			if (val > alpha) {
-				alpha = val;
+			if (val > bestVal) {
+				bestVal = val;
+				bestMove = step;
+				if (val > alpha) {
+					alpha = val;
+				}
 			}
 		}
-		list = MoveGenerator.getNonCapMove(position);
-		for (int step : list) {
-			int from = MoveGenerator.getFromLoc(step);
-			int to = MoveGenerator.getToLoc(step);
-			position.move(from, to);
-			if (position.doKingFaceKing()) {
-				position.undoMove();
-				continue;
-			}
-			int val = -naiveAlphaBeta(depth - 1, -beta, -alpha, position, curDepth + 1);
-			position.undoMove();
-			if (val >= beta) {
-				return val;
-			}
-			bestVal = (bestVal < val)? val : bestVal;
-			if (val > alpha) {
-				alpha = val;
-			}
+		// 将最好棋步记入历史表
+		if (bestVal >= alpha) {
+			HistoryTable.record(bestMove, depth);
 		}
 		return bestVal;
 	}

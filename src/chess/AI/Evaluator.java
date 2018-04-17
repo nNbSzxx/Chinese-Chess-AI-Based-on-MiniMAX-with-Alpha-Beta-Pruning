@@ -156,8 +156,11 @@ public final class Evaluator {
 		PIECE_VAL[Board.RED_SIDE] = INIT_PIECE_VAL.clone();
 		for (int pieceType = 0; pieceType < PIECE_VAL[Board.BLACK_SIDE].length; pieceType ++) {
 			for (int loc = 0; loc < PIECE_VAL[Board.BLACK_SIDE][pieceType].length; loc ++) {
+				int mirrorLoc = horizontallyFlip(loc);
+				assert (Board.getFile(mirrorLoc) == Board.getFile(loc));
+				assert (Board.getRank(mirrorLoc) == Board.MAX_RANK - 1 - Board.getRank(loc));
 				PIECE_VAL[Board.BLACK_SIDE][pieceType][loc] = 
-						PIECE_VAL[Board.RED_SIDE][pieceType][horizontallyFlip(loc)];
+						PIECE_VAL[Board.RED_SIDE][pieceType][mirrorLoc];
 			}
 		}
 		System.out.println("Evaluation Table has been generated");

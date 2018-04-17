@@ -331,7 +331,7 @@ public final class Position {
 		return false;
 	}
 	private boolean isCheckedByPawn(int myKing, int myKingLoc) {
-		// 在帅的攻击范围内的卒一定是对方过河卒
+		// 在帅的攻击范围内的卒不是己方中兵就一定是对方过河卒
 		int capedPiece;
 		int capedPieceLoc;
 		if (Board.getPieceSide(myKing) == Board.RED_SIDE) {
