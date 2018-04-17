@@ -31,7 +31,6 @@ public class Rking extends ChessPieces{
 			return false;
 		}else {//将帅不能对脸？？
 			//需要遍历一下棋盘找到Bking的 位置坐标
-			@SuppressWarnings("unused")
 			int bx = 0;
 			int by = 0;
 			for(int i = 0;i < 3;i++) 

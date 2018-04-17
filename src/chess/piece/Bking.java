@@ -29,7 +29,6 @@ public class Bking extends ChessPieces{
 			return false;
 		}else {//将帅不能对脸？？
 			//需要遍历一下棋盘找到Rking的 位置坐标
-			@SuppressWarnings("unused")
 			int bx = 0;
 			int by = 0;
 			for(int i = 7;i < 10;i++) 
@@ -48,7 +47,7 @@ public class Bking extends ChessPieces{
 			{
 //				if(this.piecesInStraightWay(board, toX, toY) == 0)
 //					return false;
-				for(int x = toX ; x < bx ; x++){
+				for(int x = toX + 1; x < bx ; x++){
 					if(board.getPiece(x, by) != null) return true;
 				}
 				return false;
