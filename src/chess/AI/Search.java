@@ -1,7 +1,5 @@
 package chess.AI;
 
-import java.util.List;
-
 public final class Search {
 	// 无合法棋步时返回的编号
 	public static final int NO_LEGAL_MOVE = 0;
@@ -17,6 +15,7 @@ public final class Search {
 	// 迭代加深
 	public static int mainSearch(Position position) {
 		count = 0;
+		// 发现清空历史表比全部保留或者衰减原有历史表的值效果都要好
 		HistoryTable.clear();
 //		HistoryTable.shrink();
 		long beginTime = System.currentTimeMillis();

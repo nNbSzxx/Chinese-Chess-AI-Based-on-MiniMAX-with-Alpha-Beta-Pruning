@@ -13,6 +13,7 @@ public final class MoveGenerator {
 	// 注意：本类中我们使用一个int描述一个招法，低8位表示目的地坐标，
 	// 高8位表示起点坐标，最高的16位为0
 	// 从而节约搜索过程中递归调用产生的空间开销
+	// 同时在历史表中也使用了这种方法记录招法
 	
 	public static final int FROMLOC_SHIFT = 8;
 	// 取得起始坐标的掩码
@@ -41,12 +42,14 @@ public final class MoveGenerator {
 		return list;
 	}
 	
-	// 获得所有吃子招法，并根据参数决定是否将非吃子招法缓存
 	// 注意！以下两个方法返回的都是类变量而不是类变量的副本！
+	// 获得所有吃子招法，并根据参数决定是否将非吃子招法缓存
 	public static List<Integer> getCapMove(Position position, boolean doCacheNonCapMove) {
 		generateCapMove(position, doCacheNonCapMove);
 		return capMoves;
 	}
+	// 获得所有非吃子招法，并根据参数决定是否清空nonCapMoves
+	// 注意！只有时间上最近的一次调用是getCapMove，并且doCacheNonCapMove=true，不清空nonCapMoves才是正确的！
 	public static List<Integer> getNonCapMove(Position position, boolean doUseNonCapCache) {
 		generateNonCapMove(position, doUseNonCapCache);
 		return nonCapMoves;

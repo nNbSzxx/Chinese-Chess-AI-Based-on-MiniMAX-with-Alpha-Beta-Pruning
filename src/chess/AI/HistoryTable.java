@@ -8,7 +8,9 @@ package chess.AI;
  */
 
 public final class HistoryTable {
+	// 招法编号上限
 	public static final int STEP_UPPER_BOUND = 256 * 256;
+	// 历史表，下标是一个招法，招法表示同 MoveGenerator
 	private static int[] table = new int[STEP_UPPER_BOUND];
 	
 	public static void clear() {
