@@ -22,7 +22,7 @@ public final class Search {
 		long beginTime = System.currentTimeMillis();
 		int bestStep = NO_LEGAL_MOVE;
 		int dep;
-		for (dep = 1; dep <= 7; ++ dep) {
+		for (dep = 1; ; ++ dep) {
 			bestStep = searchRoot(dep, -Evaluator.WIN_VALUE, Evaluator.WIN_VALUE, position);
 			timeCost = System.currentTimeMillis() - beginTime;
 			if (timeCost >= THINKING_TIME * 1000) {
