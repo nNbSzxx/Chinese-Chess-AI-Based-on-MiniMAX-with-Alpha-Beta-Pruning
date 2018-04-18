@@ -175,6 +175,15 @@ public final class Position {
 		changeSide();
 	}
 	
+	// 走一步空着，在空着裁剪中运用
+	public void makeNullMove() {
+		changeSide();
+	}
+	// 撤销一步空着
+	public void undoNullMove() {
+		changeSide();
+	}
+	
 	// 评估当前局面 
 	public int evaluate() {
 		return isRedMove ? 
@@ -199,6 +208,22 @@ public final class Position {
 			   isCheckedByCannon(myKing, myKingLoc) || 
 			   isCheckedByKnight(myKing, myKingLoc) ||
 			   isCheckedByPawn(myKing, myKingLoc);
+	}
+	
+	// 判断是否将帅对脸
+	public boolean doKingFaceKing() {
+		int redKingLoc = getPieceLoc(Board.RED_KING);
+		int blackKingLoc = getPieceLoc(Board.BLACK_KING);
+		if (redKingLoc == 0 || blackKingLoc == 0) {
+			return false;
+		}
+//			System.out.println(redKingLoc);
+		assert (Board.inFort(redKingLoc));
+		assert (Board.inFort(blackKingLoc));
+		// 判断的思想是把帅看作是车，判断这样被当作车的帅是否能吃到将
+		return (Board.getFile(redKingLoc) == Board.getFile(blackKingLoc) &&
+				MoveTable.getFileSmallestRookCap
+					(redKingLoc, getFileBit(Board.getFile(redKingLoc))) == blackKingLoc);
 	}
 	
 	// 以下是判断将帅被特定棋子将军的方法
@@ -370,22 +395,6 @@ public final class Position {
 		return false;
 	}
 	
-	// 判断是否将帅对脸
-	public boolean doKingFaceKing() {
-		int redKingLoc = getPieceLoc(Board.RED_KING);
-		int blackKingLoc = getPieceLoc(Board.BLACK_KING);
-		if (redKingLoc == 0 || blackKingLoc == 0) {
-			return false;
-		}
-//		System.out.println(redKingLoc);
-		assert (Board.inFort(redKingLoc));
-		assert (Board.inFort(blackKingLoc));
-		// 判断的思想是把帅看作是车，判断这样被当作车的帅是否能吃到将
-		return (Board.getFile(redKingLoc) == Board.getFile(blackKingLoc) &&
-				MoveTable.getFileSmallestRookCap
-					(redKingLoc, getFileBit(Board.getFile(redKingLoc))) == blackKingLoc);
-	}
-	
 	// 移动棋子
 	private void movePiece(int from, int to) {
 //		System.out.println("In chess.AI.Position.movePiece: ");
@@ -466,7 +475,12 @@ public final class Position {
 	public int getFileBit(int file) {
 		return fileBit[file];
 	}
-	
+	public int getRedVal() {
+		return evaluationVal[Board.RED_SIDE];
+	}
+	public int getBlackVal() {
+		return evaluationVal[Board.BLACK_SIDE];
+	}
 	// test
 	private static boolean isAllDiff() {
 		int cnt[] = new int[256];

@@ -8,15 +8,15 @@ import java.util.List;
  * 
  * @author nNbS
  *   
- *   This class is used to sort steps
+ *   This class is used to help prune
  */
 
-public final class StepDealer {
+public final class Pruner {
 	private Position position;
-	private List<Integer> steps;
-	private Iterator<Integer> iterator;
+	private List<Integer> steps = null;
+	private Iterator<Integer> iterator = null;
 	
-	public StepDealer(Position position) {
+	public Pruner(Position position) {
 		this.position = position;
 		steps = MoveGenerator.getAllMove(this.position);
 		sortStep();
@@ -25,6 +25,11 @@ public final class StepDealer {
 	public void sortStep() {
 		steps.sort(new SortedByHistoryTable());
 	}
+	
+	/* 试图得到当前最优的招法，这样做：
+	 * 1.使得对手的局面尽量差，这样下一个节点的兄弟节点们的beta值就会尽可能的大，利于裁剪
+	 * 2.使自己的局面尽量的好，这样更可能触发本节点的beta截断
+	 */
 	public int getAStep() {
 		if (iterator.hasNext()) {
 			return iterator.next();
