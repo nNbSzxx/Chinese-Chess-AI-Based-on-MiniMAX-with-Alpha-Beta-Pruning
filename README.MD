@@ -1,5 +1,7 @@
 # Chinese-Chess-AI-Based-on-MiniMAX-with-Alpha-Beta-Pruning
 
+Run chess.view.ChessView.main to play the game!
+
 This is a teamwork contributed to Wei Zhenyuan, 
 Zhang Cui, Tao Kai and me. 
 
