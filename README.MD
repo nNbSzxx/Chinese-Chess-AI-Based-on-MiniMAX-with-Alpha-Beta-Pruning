@@ -1,7 +1,7 @@
 # Chinese-Chess-AI-Based-on-MiniMAX-with-Alpha-Beta-Pruning
 
-Run chess.view.ChessView.main to play the game!
-Or Run with "java -jar ChineseChess.jar"
+Run chess.view.ChessView.main to play the game!  
+Or Run with "java -jar ChineseChess.jar"  
 This is a teamwork contributed to Wei Zhenyuan, 
 Zhang Cui, Tao Kai and me. 
 
