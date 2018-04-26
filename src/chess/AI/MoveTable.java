@@ -149,7 +149,7 @@ public final class MoveTable {
 		makeStraightPieceTable();
 		makeOtherPieceTable();
 		makeMaskTable();
-	//	assert false : "test assertion";
+//		assert false : "test assertion";
 		System.out.println("Move Table has generated");
 	}
 	

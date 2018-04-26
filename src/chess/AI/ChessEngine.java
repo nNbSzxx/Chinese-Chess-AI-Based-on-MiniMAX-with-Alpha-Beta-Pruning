@@ -5,10 +5,29 @@ import chess.util.Step;
 
 public class ChessEngine {
 	
+	// 难度依次递增
+	public static enum Level {ONE, TWO, THREE};
 	Position position;
 	// 初始化函数
 	public ChessEngine() {
 		position = new Position();
+		Search.setThinkingTime(1000);
+	}
+	
+	public void setLevel(Level level) {
+		switch (level) {
+		case ONE:
+			Search.setThinkingTime(1000);
+			break;
+		case TWO:
+			Search.setThinkingTime(2000);
+			break;
+		case THREE:
+			Search.setThinkingTime(3000);
+			break;
+		default:
+			break;
+		}
 	}
 	
 	// AI走棋函数
@@ -40,6 +59,10 @@ public class ChessEngine {
 		int from = (((fromX + Board.RANK_TOP) << 4) | (fromY + Board.FILE_LEFT));
 		int to = (((toX + Board.RANK_TOP) << 4) | (toY + Board.FILE_LEFT));
 		position.move(from, to);
+	}
+	
+	public void regret() {
+		position.undoMove();
 	}
 	
 	private static Step transformStep(int from, int to) {

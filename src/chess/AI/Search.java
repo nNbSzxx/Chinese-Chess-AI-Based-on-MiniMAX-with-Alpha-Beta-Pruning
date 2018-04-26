@@ -5,8 +5,8 @@ public final class Search {
 	public static final int NO_LEGAL_MOVE = 0;
 	// 依层数搜索时，朴素alpha-beta搜索的最大深度
 	public static final int NAIVE_ALPHABETA_DEPTH = 5;
-	// 按照时间长短搜索时，最长思考时间
-	public static final int THINKING_TIME = 3;
+	// 按照时间长短搜索时，最长思考时间，单位毫秒
+	public static int thinkingTime = 1500;
 	// 空着裁剪步数
 	public static final int NULL_MOVE_SKIP = 2;
 	// 允许空着裁剪的最小局面价值，因为残局下执行空着可能会比走棋更好
@@ -16,7 +16,9 @@ public final class Search {
 	// 记录找出一步祺一共用了多长时间
 	private static long timeCost = 0;
 	
-	
+	public static void setThinkingTime(int mils) {
+		thinkingTime = mils;
+	}
 	// 迭代加深
 	public static int mainSearch(Position position) {
 		count = 0;
@@ -29,7 +31,7 @@ public final class Search {
 		for (dep = 1; ; ++ dep) {
 			bestStep = searchRoot(dep, -Evaluator.WIN_VALUE, Evaluator.WIN_VALUE, position);
 			timeCost = System.currentTimeMillis() - beginTime;
-			if (timeCost >= THINKING_TIME * 1000) {
+			if (timeCost >= thinkingTime) {
 				break;
 			}
 		}

@@ -68,6 +68,8 @@ public final class Board {
 	public static final int MAX_PIECE = 32;
 	// 棋子最大编号上界:
 	public static final int UPPER_BOUND_PIECE_ID = (1 << 7);
+	// 棋子最大类型编号
+	public static final int MAX_PIECE_MASK = 8;
 	
 	// 边界留白信息
 	public static final int FILE_LEFT = 3; 
