@@ -2,7 +2,11 @@ package chess.board;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
+
 import chess.AI.ChessEngine;
+import chess.AI.ChessEngine.Level;
+import chess.AI.Searchable;
 import chess.piece.Advisor;
 import chess.piece.Bking;
 import chess.piece.Cannon;
@@ -14,7 +18,7 @@ import chess.piece.Rook;
 import chess.piece.Soldier;
 import chess.util.Step;
 
-public class ChessBoard {
+public class ChessBoard extends Searchable{
 	// 定义当前棋局状态
 	public static enum State {REDWIN, BLACKWIN, DRAW, UNFINISH};
 	State state;
@@ -33,9 +37,15 @@ public class ChessBoard {
 	// 棋盘上最多棋子数
 	static public final int MAXPIECE = 32;
 	
+	//用于记录棋子轨迹的栈
+	protected Stack<StepTrack> track;
+	
 	
 	// 初始化棋盘，将棋盘状态重置为开局时状态
 	private void initialize() {
+		//初始化栈保存路径的栈
+		track = new Stack<StepTrack>();
+		
 		initPieces();
 		this.isRedMove = true;
 		this.state = State.UNFINISH;
@@ -77,6 +87,7 @@ public class ChessBoard {
 			} else {
 				System.out.print("pick null ");
 			}
+			System.out.println("");
 		} else {
 			System.out.println("Chess Board Index Out Of Range in isMoveLegal!");
 			System.out.printf("Index: %d %d %d %d", 
@@ -94,6 +105,14 @@ public class ChessBoard {
 		System.out.println("from x:" + step.getFromX() + " from y:" + step.getFromY() + " to x:"
 				+ step.getToX() + " to y:" + step.getToY() + " ");
 		if (isMoveLegal(step)) {
+			//添加悔棋的操作
+			try {
+				pushPath(step);
+			} catch (CloneNotSupportedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+			
 			// 移动棋子
 			move(step);
 			// 更新当前行祺方
@@ -175,7 +194,10 @@ public class ChessBoard {
 		return board.clone();
 	}
 	
-
+	// 返回当前局面总分
+	public int getValue() {
+		return evaluate(board,this);
+	}
 	
 	// AI相关功能实现完毕
 	
@@ -261,17 +283,87 @@ public class ChessBoard {
 	public boolean isRedMove() {
 		return isRedMove;
 	}
+	
+	//悔棋功能实现
+	//将每走的一步放入栈中
+	public void pushPath(Step step) throws CloneNotSupportedException{
+		//注意棋盘空的位置为null
+		
+		ChessPieces f,t;
+		f = this.board[step.getFromX()][step.getFromY()].clone();
+		//对于移动目标是否为null的判定
+		t = this.board[step.getToX()][step.getToY()];
+		if(t!=null){
+			t = t.clone();
+		}
+		
+		StepTrack st = new StepTrack(f,t,step.getFromX(),step.getFromY(),step.getToX(),step.getToY());
+		this.track.push(st);
+		
+	}
+	//实现悔棋
+	public void back() {
+		ChessPieces f, t;
+		//每次悔棋加上电脑共回退两步
+		for (int i = 1; i <= 2; i++) {
+			if (!this.track.empty()) {
+				AI.regret();
+				StepTrack st = this.track.pop();
+				f = st.getFrom();
+				t = st.getTo();
+				// System.out.println("after back from:" + f.getName());
+				// if(t!=null){
+				// System.out.println("after back to:" + t.getName());
+				// }else{
+				// System.out.println("after back to:null");
+				// }
+				board[st.getFx()][st.getFy()] = f;
+				board[st.getTx()][st.getTy()] = t;
+				// System.out.println("after back from" + st.getFx() + " "
+				// +st.getFy());
+				// System.out.println("after back to:" +st.getTx() + " " +
+				// st.getTy());
+				// System.out.println("after back
+				// from:"+board[st.getFx()][st.getFy()]);
+				// System.out.println("after back to:"
+				// +board[st.getTx()][st.getTy()]);
+
+			} else {
+				System.out.println("不能悔棋");
+			}
+		}
+
+	}
+	public void show(){
+		for(int i=0;i<10;i++){
+			for(int j=0;j<9;j++){
+				if(board[i][j]!=null)
+					System.out.print(board[i][j].getName() + "  ");
+				else
+					System.out.print("null  ");
+			}
+			System.out.println("");
+		}
+		System.out.println("是否存活");
+		for(int i=0;i<10;i++){
+			for(int j=0;j<9;j++){
+				if(board[i][j]!=null)
+					System.out.print(board[i][j].isAlive()+ "  ");
+				else
+					System.out.print("false  ");
+			}
+			System.out.println("");
+		}
+	}
+	//难度设置调用
+	public void setLevel(Level L){
+		AI.setLevel(L);
+	}
 
 	
 	
 	// 以下是被弃用的方法和数据成员
 	
-	// 已在Chess.AI.Position中实现
-	// 返回当前局面总分
-//	public int getValue() {
-//		return evaluate(board,this);
-//	}
-
 	// 实现上存在麻烦
 	// 红方是否被将军
 //		private boolean isRedBeChecked;

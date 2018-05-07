@@ -1,11 +1,15 @@
 package chess.view;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Stack;
 
 import javax.swing.*;
 
+import chess.AI.ChessEngine.Level;
 import chess.board.ChessBoard;
 import chess.util.Step;
 
@@ -26,33 +30,52 @@ public class ChessView extends JFrame implements MouseListener{
 	
 	protected Step step;
 	
-	protected ChessBoard chessBoard;
+	protected ChessBoard chessBoard;	//引擎中的棋盘
+	protected Menu menu;	//菜单按钮
 	
+	protected Stack<Path> track;
 	
+
 	public ChessView(){
 		super("中国象棋");
 		container = getContentPane();
 		container.setLayout(null);
+		container.setBackground(new Color(205,133,63));
 		
 		board = new PlayBoard();
+		menu = new Menu(this);	//菜单栏
+			
 		
 		from = null;
 		to = null;
 		last1 = null;
 		last2 = null;
-		
-		
+			
 		this.addMouseListener(this);
+		
 		this.add(board);		
-		this.setSize(700,800);
+		
+	
+		this.add(menu);
+		menu.setBounds(635, 0, 100, 720);
+		
+		this.setSize(750,720);
 		this.setVisible(true);
-		this.setLocation(600, 0);
+		//设置窗口的位置位于屏幕中间
+		Toolkit kit = Toolkit.getDefaultToolkit();
+		Dimension screenSize = kit.getScreenSize();
+		this.setLocation((screenSize.width-750)/2, (screenSize.height-720)/2);
+		
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
 	//初始化整个棋盘
 	//坐标映射函数(y*64+32,x*62+33,50,50)
 	public void initial() {
+		
+		//初始化悔棋的栈
+		this.track = new Stack<Path>();
+		
 		pieces = new ChessPiece[11][10];
 		for (int i = 0; i < 10; i++)
 			for (int j = 0; j < 9; j++){
@@ -103,7 +126,7 @@ public class ChessView extends JFrame implements MouseListener{
 
 		// 将
 		image = new ImageIcon("pic/Bjiang.png");
-		pieces[0][4].setAttribute("将", Color.black, image, 0, 4);
+		pieces[0][4].setAttribute("jiang", Color.black, image, 0, 4);
 		board.add(pieces[0][4]);
 		pieces[0][4].setBounds(288, 33, 50, 50);
 		
@@ -168,7 +191,7 @@ public class ChessView extends JFrame implements MouseListener{
 		
 		//帅
 		image = new ImageIcon("pic/Rshuai.png");
-		pieces[9][4].setAttribute("帅", Color.red, image, 9, 4);
+		pieces[9][4].setAttribute("shuai", Color.red, image, 9, 4);
 		board.add(pieces[9][4]);
 		pieces[9][4].setBounds(288,591,50,50);
 		
@@ -199,6 +222,7 @@ public class ChessView extends JFrame implements MouseListener{
 				}
 			}
 	}
+	
 
 	public boolean isLegal(ChessPiece from, ChessPiece to) {
 		//System.out.println(from.name + from.x + "  " + from.y + "  " + to.name + to.x + "  " + to.y);
@@ -206,7 +230,7 @@ public class ChessView extends JFrame implements MouseListener{
 
 		if (this.chessBoard.isMoveLegal(step)) {
 
-			//更新ChessBoard类中的棋盘
+			//更新引擎中ChessBoard类中的棋盘
 			this.chessBoard.update(this.step);
 
 			return true;
@@ -223,8 +247,12 @@ public class ChessView extends JFrame implements MouseListener{
 		move(f,t);	//调用处理移动的函数
 	}
 	
-	//移动两个点
+	//移动两个点,此移动已经是合法的移动
 	public void move(ChessPiece from,ChessPiece to){
+		this.pushPath(from, to);	//调用函数将该走法放入栈中
+		
+		String toName = to.name;
+		
 		board.remove(from);
 		board.remove(to);
 		int x1,y1,x2,y2;
@@ -257,6 +285,8 @@ public class ChessView extends JFrame implements MouseListener{
 			board.add(pieces[x2][y2]);
 			pieces[x1][y1].setBounds(y1*64+32, x1*62+33, 50, 50);
 			pieces[x2][y2].setBounds(y2*64+32, x2*62+33, 50, 50);
+			
+			
 		}
 		else{	//吃子
 			
@@ -281,12 +311,29 @@ public class ChessView extends JFrame implements MouseListener{
 			pieces[x1][y1].setBounds(y1*64+32, x1*62+33, 50, 50);
 			pieces[x2][y2].setBounds(y2*64+32, x2*62+33, 50, 50);
 			
+			//判断终局
+			if(toName.equals("jiang")){
+				JOptionPane.showMessageDialog(null, "恭喜你，赢了！", "提示", JOptionPane.CLOSED_OPTION);
+				//do something
+				for(int i=0;i<10;i++)
+					for(int j=0;j<9;j++)
+						pieces[i][j].removeListener();
+				this.menu.setUnable();
+				
+			}else if(toName.equals("shuai")){
+				JOptionPane.showMessageDialog(null, "很遗憾，输了！", "提示", JOptionPane.CLOSED_OPTION);
+				//do something
+				for(int i=0;i<10;i++)
+					for(int j=0;j<9;j++)
+						pieces[i][j].removeListener();
+				this.menu.setUnable();
+			}
+			
 		}
 		last1 = pieces[x1][y1];
 		last2 = pieces[x2][y2];
 		this.from = null;
 		this.to = null;
-		
 		//到对方下棋
 		this.isRedTurn = !this.isRedTurn;
 
@@ -324,29 +371,119 @@ public class ChessView extends JFrame implements MouseListener{
 		// TODO Auto-generated method stub
 		
 	}
+	//轮流下棋
+	public void play(){
+		if(!this.isRedTurn){
+			this.step = this.chessBoard.AIMove();
+			this.from = this.pieces[this.step.getFromX()][this.step.getFromY()];
+			this.to = this.pieces[this.step.getToX()][this.step.getToY()];
+			this.move(this.from, this.to);
+		}	
+		
+	}
+
+	// 重新开局
+	public void restart() {
+		for (int i = 0; i < 10; i++)
+			for (int j = 0; j < 9; j++)
+				board.remove(pieces[i][j]);
+		this.initial();
+		this.chessBoard = new ChessBoard();
+		
+		//使按钮可用
+		this.menu.setAble();
+
+		this.isRedTurn = true;
+	}
+	//将棋子移动轨迹放入栈中
+	public void pushPath(ChessPiece from,ChessPiece to){
+		ChessPiece f,t;
+		f = new ChessPiece(from.view,from.board,from.x,from.y,from.name,from.image,from.color,from.isPiece);
+		t = new ChessPiece(to.view,to.board,to.x,to.y,to.name,to.image,to.color,to.isPiece);
+		
+		Path path = new Path(f,t);
+		this.track.push(path);
+		
+	}
+	//悔棋
+	public void back() {
+		boolean flag = false;
+		for (int i = 1; i <= 2; i++) {
+			if (!this.track.empty()) {
+				
+				flag = true;
+				ChessPiece f, t;
+
+				Path p = this.track.pop();
+
+				f = p.getFrom();
+				t = p.getTo();
+
+				// 将棋盘中的在这个位置上的两个棋子移除，并将这两个棋子替换上
+				// remove...
+				this.board.remove(pieces[f.x][f.y]);
+				this.board.remove(pieces[t.x][t.y]);
+
+				pieces[f.x][f.y] = new ChessPiece(this, board, f.x, f.y);
+				pieces[t.x][t.y] = new ChessPiece(this, board, t.x, t.y);
+
+				pieces[f.x][f.y].setAttribute(f.name, f.color, f.image, f.x, f.y, f.isPiece);
+				pieces[t.x][t.y].setAttribute(t.name, t.color, t.image, t.x, t.y, t.isPiece);
+
+				this.board.add(pieces[f.x][f.y]);
+				this.board.add(pieces[t.x][t.y]);
+
+				// (y*64+32,x*62+33,50,50)
+				pieces[f.x][f.y].setBounds(f.y * 64 + 32, f.x * 62 + 33, 50, 50);
+				pieces[t.x][t.y].setBounds(t.y * 64 + 32, t.x * 62 + 33, 50, 50);
+				if(i==1){
+					this.last1.setBorder(null);
+					this.last2.setBorder(null);
+					this.last1 = pieces[f.x][f.y];
+					this.last2 = pieces[t.x][t.y];
+					this.last1.setBorder(BorderFactory.createLineBorder(Color.red));
+					this.last2.setBorder(BorderFactory.createLineBorder(Color.red));
+				}
+
+			} else {
+				System.out.println("不能悔棋");
+			}
+		}
+		if(flag)
+			this.chessBoard.back();
+		else
+			JOptionPane.showMessageDialog(null, "不能悔棋", "悔棋提示", JOptionPane.OK_OPTION);
+
+	}
+	//打印核查
+	public void check(){
+		System.out.println("引擎类");
+		this.chessBoard.show();
+		System.out.println("棋盘类");
+		for(int i=0;i<10;i++){
+			for(int j=0;j<9;j++){
+				System.out.print(pieces[i][j].name + "  ");
+			}
+			System.out.println("");
+		}
+	}
+	//难度设置
+	public void setLevel(Level L){
+		this.restart();
+		this.chessBoard.setLevel(L);
+	}
+		
 	public static void main(String args[]){
-//		assert false;
+		
 		ChessView c = new ChessView();
 		c.initial();
 		
 		c.chessBoard = new ChessBoard();
 		
 		c.isRedTurn = true;
-		
-		while(true){	
+		while(true){
 			System.out.print("");
-			if(!c.isRedTurn){
-				System.out.println("In chess.view.ChessView: Make AI Move");
-				c.step = c.chessBoard.AIMove();
-				c.from = c.pieces[c.step.getFromX()][c.step.getFromY()];
-				c.to = c.pieces[c.step.getToX()][c.step.getToY()];
-				
-				c.move(c.from, c.to);
-			}	
-			
-		}
-		
+			c.play();
+		}		
 	}
-	
-
 }

@@ -4,7 +4,7 @@ import java.util.*;
 import chess.board.ChessBoard;
 import chess.util.Step;
 
-public abstract class ChessPieces {
+public abstract class ChessPieces implements Cloneable{
 	// 棋子的坐标
 	private int x;
 	private int y;
@@ -26,6 +26,9 @@ public abstract class ChessPieces {
 		isRed = iniIsRed;
 		isAlive = iniIsAlive;
 		name = iniName;
+	}
+	public ChessPieces clone() throws CloneNotSupportedException{
+		return (ChessPieces)super.clone();
 	}
 
 	// 首先检查是不是本方行祺， 然后再判断行祺是否合法

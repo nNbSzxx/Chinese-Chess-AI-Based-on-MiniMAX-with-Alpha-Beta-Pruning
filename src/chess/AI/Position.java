@@ -105,6 +105,7 @@ public final class Position {
 	private int evaluationVal[] = new int[2];
 	// 棋局回滚结构，用于撤销一步祺
 	private Stack<RollBackRecord> records = new Stack<>();
+	// 
 	// 私有数据成员结束
 	
 	

@@ -16,8 +16,8 @@ public class ChessPiece extends JLabel implements MouseListener {
 	protected int x,y;			//棋子的坐标
 	protected Icon image = null;		//棋子的图片
 	protected boolean isPiece;	//标志该位置是否有棋子
-	private ChessView view;
-	private PlayBoard board;
+	protected ChessView view;
+	protected PlayBoard board;
 	
 	//构造方法，初始化棋子并设置棋子的参数
 	public ChessPiece(String name,Color color,Icon image,int x,int y){
@@ -34,6 +34,18 @@ public class ChessPiece extends JLabel implements MouseListener {
 		
 		//添加事件监听器
 		this.addMouseListener(this);
+		
+	}
+	//构造含有棋子全部属性的构造方法
+	public ChessPiece(ChessView view,PlayBoard board,int x,int y,String name,Icon image,Color color,boolean isPiece){
+		this.view = view;
+		this.board = board;
+		this.x = x;
+		this.y = y;
+		this.name = name;
+		this.image = image;
+		this.color = color;
+		this.isPiece = isPiece;
 		
 	}
 	//构造方法，传递这个画面的对象和棋盘的对象以便后面操作
@@ -56,6 +68,16 @@ public class ChessPiece extends JLabel implements MouseListener {
 		this.x = x;
 		this.y = y;	
 		this.isPiece = true;
+		this.setVisible(true);
+	}
+	public void setAttribute(String name,Color color,Icon image,int x,int y,boolean isPiece){
+		this.setIcon(image);
+		this.color = color;
+		this.name = name;
+		this.image = image;
+		this.x = x;
+		this.y = y;	
+		this.isPiece = isPiece;
 		this.setVisible(true);
 	}
 	
@@ -83,6 +105,7 @@ public class ChessPiece extends JLabel implements MouseListener {
 				//System.out.println("KKKKKK" + view.from.name + view.to.name);
 				if (view.isLegal(view.from, view.to)) {
 					view.move(view.from, view.to);
+					//view.play();
 
 				} else {
 					System.out.println("不能走棋");
@@ -92,6 +115,9 @@ public class ChessPiece extends JLabel implements MouseListener {
 			}
 		}
 
+	}
+	public void removeListener(){
+		this.removeMouseListener(this);
 	}
 	
 	@Override
