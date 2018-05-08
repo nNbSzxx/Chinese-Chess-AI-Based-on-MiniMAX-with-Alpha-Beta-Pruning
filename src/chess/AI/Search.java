@@ -50,7 +50,12 @@ public final class Search {
 		int bestVal = -Evaluator.WIN_VALUE;
 		int bestMove = NO_LEGAL_MOVE;
 		// 根节点禁止空着裁剪
-		Pruner pruner = new Pruner(position);
+		Pruner pruner = new Pruner(position, depth);
+		// 尝试置换表裁剪，检查置换表是否存在满足当前深度的记录，若有直接返回
+		if (pruner.isDeeplySearched()) {
+			bestMove = pruner.getRecord().getBestMove();
+			return bestMove;
+		}
 //		System.out.println("In chess.AI.Search.searchRoot: steps " + dealer.getStepCount());
 		for (int step = pruner.getAStep(); step != NO_LEGAL_MOVE; step = pruner.getAStep()) {
 			int from = MoveGenerator.getFromLoc(step);
@@ -63,7 +68,12 @@ public final class Search {
 			}
 			int val = -failSoftAlphaBeta(depth - 1, -beta, -alpha, position, 1);
 			position.undoMove();
-			// beta是胜利状态的价值，因此不会发生beta截断
+			// 发生beta截断时，记录该局面
+			if (val >= beta) {
+//				HistoryTable.record(step, depth);
+				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, step);
+				return step;
+			}
 			if (val > bestVal) {
 				bestVal = val;
 				bestMove = step;
@@ -72,9 +82,12 @@ public final class Search {
 				}
 			}
 		}
-		// 将棋步记入历史表
+		// 记录当前局面
 		if (bestVal >= alpha) {
-			HistoryTable.record(bestMove, depth);
+//			HistoryTable.record(bestMove, depth);
+			pruner.saveRecord(TranspositionRecord.NodeType.PVS, bestVal, bestMove);
+		} else {
+			pruner.saveRecord(TranspositionRecord.NodeType.ALPHA, bestVal, bestMove);
 		}
 		return bestMove;
 	}
@@ -93,9 +106,16 @@ public final class Search {
 		if (position.isEnd()) {
 			return -Evaluator.WIN_VALUE + curDepth;
 		}
+		Pruner pruner = new Pruner(position, depth);
+		// 尝试置换表裁剪，检查置换表是否存在满足当前深度的记录，若有直接返回
+		if (pruner.isDeeplySearched()) { 
+			return pruner.getRecord().getValue();
+		}
 		if (depth == 0) {
 			return position.evaluate();
 		}
+		int bestVal = -Evaluator.WIN_VALUE;
+		int bestMove = NO_LEGAL_MOVE;
 		// 尝试空着裁剪
 		if (beta != Evaluator.WIN_VALUE && doAllowNullMove(position)) {
 			position.makeNullMove();
@@ -104,13 +124,13 @@ public final class Search {
 			position.undoNullMove();
 			if (val >= beta) {
 				// 裁剪成功
+				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, 0);
 				return val;
 			}
 		}
-		int bestVal = -Evaluator.WIN_VALUE;
-		int bestMove = NO_LEGAL_MOVE;
-		Pruner pruner = new Pruner(position);
+		// 尝试招法
 		for (int step = pruner.getAStep(); step != NO_LEGAL_MOVE; step = pruner.getAStep()) {
+			assert (step != NO_LEGAL_MOVE);
 			int from = MoveGenerator.getFromLoc(step);
 			int to = MoveGenerator.getToLoc(step);
 			position.move(from, to);
@@ -120,9 +140,10 @@ public final class Search {
 			}
 			int val = -failSoftAlphaBeta(depth - 1, -beta, -alpha, position, curDepth + 1);
 			position.undoMove();
-			// 发生beta截断时，将该棋步记入历史表
+			// 发生beta截断时，记录该局面
 			if (val >= beta) {
-				HistoryTable.record(step, depth);
+//				HistoryTable.record(step, depth);
+				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, step);
 				return val;
 			}
 			if (val > bestVal) {
@@ -133,9 +154,12 @@ public final class Search {
 				}
 			}
 		}
-		// 将最好棋步记入历史表
+		// 记录当前局面
 		if (bestVal >= alpha) {
-			HistoryTable.record(bestMove, depth);
+//			HistoryTable.record(bestMove, depth);
+			pruner.saveRecord(TranspositionRecord.NodeType.PVS, bestVal, bestMove);
+		} else {
+			pruner.saveRecord(TranspositionRecord.NodeType.ALPHA, bestVal, bestMove);
 		}
 		return bestVal;
 	}
@@ -146,13 +170,19 @@ public final class Search {
 		if (position.isEnd()) {
 			return curDepth - Evaluator.WIN_VALUE;
 		}
+		Pruner pruner = new Pruner(position, depth);
+		// 尝试置换表裁剪，检查置换表是否存在满足当前深度的记录，若有直接返回
+		if (pruner.isDeeplySearched()) {
+			return pruner.getRecord().getValue();
+		}
 		// 注意！空着裁剪可能使得深度小于0
 		if (depth <= 0) {
 			return position.evaluate();
 		}
 		int bestVal = -Evaluator.WIN_VALUE;
 		int bestMove = NO_LEGAL_MOVE;
-		Pruner pruner = new Pruner(position);
+		
+		// 禁止连续空着裁剪
 		for (int step = pruner.getAStep(); step != NO_LEGAL_MOVE; step = pruner.getAStep()) {
 			int from = MoveGenerator.getFromLoc(step);
 			int to = MoveGenerator.getToLoc(step);
@@ -164,9 +194,10 @@ public final class Search {
 			// 这里我们禁止连续的空着裁剪，因此空着裁剪后是alpha-beta搜索
 			int val = -failSoftAlphaBeta(depth - 1, -beta, -alpha, position, curDepth + 1);
 			position.undoMove();
-			// 发生beta截断时，将该棋步记入历史表
+			// 发生beta截断时，记录该局面
 			if (val >= beta) {
-				HistoryTable.record(step, depth);
+//				HistoryTable.record(step, depth);
+				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, step);
 				return val;
 			}
 			if (val > bestVal) {
@@ -177,9 +208,12 @@ public final class Search {
 				}
 			}
 		}
-		// 将最好棋步记入历史表
+		// 记录当前局面
 		if (bestVal >= alpha) {
-			HistoryTable.record(bestMove, depth);
+//			HistoryTable.record(bestMove, depth);
+			pruner.saveRecord(TranspositionRecord.NodeType.PVS, bestVal, bestMove);
+		} else {
+			pruner.saveRecord(TranspositionRecord.NodeType.ALPHA, bestVal, bestMove);
 		}
 		return bestVal;
 	}
@@ -191,7 +225,6 @@ public final class Search {
 	private Search() {}
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 //		assert false;
 	}
 

@@ -105,7 +105,9 @@ public final class Position {
 	private int evaluationVal[] = new int[2];
 	// 棋局回滚结构，用于撤销一步祺
 	private Stack<RollBackRecord> records = new Stack<>();
-	// 
+	// Zobrist 键值，用于置换表等
+	// 需要在改变棋局信息时修改键值，比如初始化棋盘，添加棋子，移除棋子，变换走棋方
+	private Zobrist zobrist = new Zobrist();
 	// 私有数据成员结束
 	
 	
@@ -118,7 +120,7 @@ public final class Position {
 			}
 		}
 		assert (evaluationVal[Board.RED_SIDE] == evaluationVal[Board.BLACK_SIDE]);
-		// 输出棋盘
+		// 输出棋盘，以供调试
 		System.out.println("BK: " + BK);
 		for (int i = 0; i < Board.BOARD_SIZE; i ++) {
 			if (i % 16 == 0) {
@@ -149,15 +151,8 @@ public final class Position {
 			System.out.println("");
 		}
 		System.out.println("");
+		// 输出结束
 	}
-	// unfinished
-//	public Position(ChessBoard board) {
-//		for (int i = 0; i < board.MAXROW; i ++) {
-//			for (int j = 0; j < board.MAXCOL; j ++) {
-//				
-//			}
-//		}
-//	}
 	
 	// 走一步祺
 	public void move(int from, int to) {
@@ -431,6 +426,8 @@ public final class Position {
 		rankBit[Board.getRank(loc)] ^= MoveTable.rankMask[loc];
 		assert ((fileBit[Board.getFile(loc)] & MoveTable.fileMask[loc]) == 0);
 		fileBit[Board.getFile(loc)] ^= MoveTable.fileMask[loc];
+		// 修改Zobrist键值
+		zobrist.xor(Zobrist.Z_TABLE[Board.getPieceSide(piece)][Board.getPieceType(piece)][loc]);
 		// 增加评估值
 		evaluationVal[Board.getPieceSide(piece)] += 
 				Evaluator.getPieceVal(piece, loc);
@@ -447,6 +444,8 @@ public final class Position {
 		rankBit[Board.getRank(loc)] ^= MoveTable.rankMask[loc];
 		assert ((fileBit[Board.getFile(loc)] & MoveTable.fileMask[loc]) != 0);
 		fileBit[Board.getFile(loc)] ^= MoveTable.fileMask[loc];
+		// 修改Zobrist键值
+		zobrist.xor(Zobrist.Z_TABLE[Board.getPieceSide(piece)][Board.getPieceType(piece)][loc]);
 		// 减少评估值
 		evaluationVal[Board.getPieceSide(piece)] -=
 				Evaluator.getPieceVal(piece, loc);
@@ -455,14 +454,13 @@ public final class Position {
 	}
 	private void changeSide() {
 		isRedMove = !isRedMove;
+		// 修改Zobrist键值
+		zobrist.xor(Zobrist.Z_SIDE);
 	}
 	
 	// getter & setter
 	public boolean isRedMove() {
 		return isRedMove;
-	}
-	public void setRedMove(boolean isRedMove) {
-		this.isRedMove = isRedMove;
 	}
 	public int getPiece(int loc) {
 		return board[loc];
@@ -482,6 +480,10 @@ public final class Position {
 	public int getBlackVal() {
 		return evaluationVal[Board.BLACK_SIDE];
 	}
+	public Zobrist getZobrist() {
+		return zobrist;
+	}
+
 	// test
 	private static boolean isAllDiff() {
 		int cnt[] = new int[256];

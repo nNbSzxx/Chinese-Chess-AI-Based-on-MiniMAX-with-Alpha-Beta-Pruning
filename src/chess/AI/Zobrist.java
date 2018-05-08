@@ -11,7 +11,7 @@ import java.util.Random;
  */
 public final class Zobrist {
 	// 存储双方每个棋子的hash键值
-	public static final Zobrist[][] Z_TABLE = new Zobrist[2][Board.MAX_PIECE_MASK];
+	public static final Zobrist[][][] Z_TABLE = new Zobrist[2][Board.MAX_PIECE_MASK][Board.BOARD_SIZE];
 	// 相同局面，需要在hash值上体现出轮到哪方下棋
 	public static final Zobrist Z_SIDE = new Zobrist();
 	// 随机数发生器
@@ -42,10 +42,14 @@ public final class Zobrist {
 		for (int side = 0; side < 2; ++ side) {
 			assert (side == Board.RED_SIDE || side == Board.BLACK_SIDE);
 			for (int pieceType = Board.KING_MASK; pieceType <= Board.PAWN_MASK; ++ pieceType) {
-				Z_TABLE[side][pieceType].key = random.nextLong();
-				Z_TABLE[side][pieceType].lock = random.nextLong();
+				for (int loc = 0; loc < Board.BOARD_SIZE; ++ loc) {
+					Z_TABLE[side][pieceType][loc] = new Zobrist();
+					Z_TABLE[side][pieceType][loc].key = random.nextLong();
+					Z_TABLE[side][pieceType][loc].lock = random.nextLong();
+				}
 			}
 		}
+		System.out.println("Zobrist Initailization done");
 	}
 	
 	private long key = 0;
@@ -56,4 +60,13 @@ public final class Zobrist {
 		key ^= rhs.key;
 		lock ^= rhs.lock;
 	}
+	
+	// getter
+	public long getKey() {
+		return key;
+	}
+	public long getLock() {
+		return lock;
+	}
+
 }

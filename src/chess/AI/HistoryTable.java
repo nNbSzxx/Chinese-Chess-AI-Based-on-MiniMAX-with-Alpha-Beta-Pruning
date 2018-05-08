@@ -25,8 +25,8 @@ public final class HistoryTable {
 		}
 	}
 	
-	public static void record(int step, int dep) {
-		table[step] += dep * dep;
+	public static void saveRecord(int step, int depth) {
+		table[step] += depth * depth;
 	}
 	
 	public static int getRecord(int step) {
