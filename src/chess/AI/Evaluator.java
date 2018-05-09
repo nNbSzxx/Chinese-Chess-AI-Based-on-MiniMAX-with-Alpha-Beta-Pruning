@@ -148,6 +148,7 @@ public final class Evaluator {
 	};
 	
 	public static int WIN_VALUE = 20000;
+	public static int WIN_LOWER_BOUND = WIN_VALUE - 200;
 	
 	// 存放黑方和红方棋子在不同位置的价值
 	private static int[][][] PIECE_VAL = new int[2][8][Board.BOARD_SIZE];

@@ -16,12 +16,16 @@ public final class Pruner {
 	private Position position;
 	// 当前搜索深度
 	private int depth;
+	// 已搜索层数，即距离根节点的距离
+	private int curDepth;
 	// 置换表中是否已经有当前局面，而且足够深，以至于可以直接返回
 	private boolean isDeeplySearched = false;
 	// 置换表是否命中
 	private boolean isSearched = false;
 	// 置换表中存储的记录
 	private TranspositionRecord record;
+	// 调整过的局面分值
+	private int adjustedValue;
 	// 存储当前棋步生成状态
 	public static enum GenState {NO_STEP, DONE_TRANS, DONE_SORT, DONE_HIS};
 	private GenState state;
@@ -30,18 +34,27 @@ public final class Pruner {
 	// 所有棋步迭代器
 	private Iterator<Integer> iterator = null;
 	
-	public Pruner(Position position, int depth) {
+	public Pruner(Position position, int depth, int curDepth) {
 		this.position = position;
 		this.depth = depth;
+		this.curDepth = curDepth;
 		state = GenState.NO_STEP;
 		record = TranspositionTable.getRecord(position);
 		// 置换表命中，则要考虑置换表招法，否则跳过置换表，直接考虑历史表招法
 		if (record != null) {
 			isSearched = true;
+			this.adjustedValue = record.getValue();
 			if (record.getBestMove() == Search.NO_LEGAL_MOVE) {
 				state = GenState.DONE_TRANS;
-			}
-			if (record.getDepth() >= this.depth) {
+			} else if (adjustedValue >= Evaluator.WIN_LOWER_BOUND) {
+				adjustedValue -= curDepth;
+				isDeeplySearched = true;
+				state = GenState.DONE_TRANS;
+			} else if (adjustedValue <= - Evaluator.WIN_LOWER_BOUND) {
+				adjustedValue += curDepth;
+				isDeeplySearched = true;
+				state = GenState.DONE_TRANS;
+			} else if (record.getDepth() >= this.depth) {
 				isDeeplySearched = true;
 				state = GenState.DONE_TRANS;
 			}
@@ -88,6 +101,12 @@ public final class Pruner {
 	}
 	
 	public void saveRecord(TranspositionRecord.NodeType type, int value, int bestMove) {
+		if (value >= Evaluator.WIN_LOWER_BOUND) {
+			value += curDepth;
+		}
+		if (value <= - Evaluator.WIN_LOWER_BOUND) {
+			value -= curDepth;
+		}
 		TranspositionRecord record = new TranspositionRecord(type, position.getZobrist().getLock(),
 											value, depth, bestMove);
 		TranspositionTable.saveRecord(position, record);
@@ -118,8 +137,13 @@ public final class Pruner {
 	public boolean isSearched() {
 		return isSearched;
 	}
-	public TranspositionRecord getRecord() {
-		return record;
+	public int getValue() {		
+		return adjustedValue;
 	}
-	
+	public int getBestMove() {
+		return record.getBestMove();
+	}
+	public TranspositionRecord.NodeType getNodeType() {
+		return record.getType();
+	}
 }

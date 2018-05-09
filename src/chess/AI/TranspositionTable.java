@@ -62,6 +62,13 @@ class TranspositionRecord {
 public final class TranspositionTable {
 	public static final int MAX_SIZE = (1 << 20) - 1;
 	private static final TranspositionRecord[] records = new TranspositionRecord[MAX_SIZE + 1];
+	// 置换表监测变量
+	// 置换表已有记录的个数
+	private static int usedLocNum = 0;
+	// 查询了多少次
+	private static int queryNum = 0;
+	// 命中了多少次
+	private static int hitNum = 0;
 	
 	static {
 		for (int i = 0; i < MAX_SIZE + 1; i ++) {
@@ -73,15 +80,20 @@ public final class TranspositionTable {
 	public static void saveRecord(Position position, TranspositionRecord record) {
 		int index = (int)(position.getZobrist().getKey()) & MAX_SIZE;
 		if (isReplace(records[index], record)) {
+			if (records[index].getDepth() == -1) {
+				++ usedLocNum;
+			}
 			records[index] = record;
 		}
 	}
 	
 	// 取出记录，如果记录存在则返回记录，否则返回null
 	public static TranspositionRecord getRecord(Position position) {
+		++ queryNum;
 		int index = (int)(position.getZobrist().getKey()) & MAX_SIZE;
 		assert (records[index] != null);
 		if (position.getZobrist().getLock() == records[index].getLock()) {
+			++ hitNum;
 			return records[index];
 		} else {
 			return null;
@@ -90,9 +102,16 @@ public final class TranspositionTable {
 	
 	// 置换表替换策略
 	private static boolean isReplace(TranspositionRecord oldRecord, TranspositionRecord newRecord) {
-		return newRecord.getDepth() > oldRecord.getDepth();
+//		return newRecord.getDepth() > oldRecord.getDepth();
+		return true;
 	}
 	
+	// 输出置换表的状况
+	public static void display() {
+		System.out.println("In chess.AI.TranpositionTable.display: Sum of records : " 
+								+ usedLocNum + " , hitNum : " + hitNum + ", queryNum : " + queryNum + 
+								", hit ratio: " + (1.0 * hitNum / queryNum));
+	}
 	private TranspositionTable() {}
 
 	

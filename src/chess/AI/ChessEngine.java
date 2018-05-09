@@ -43,7 +43,7 @@ public class ChessEngine {
 		assert (Board.inBoard(from));
 		assert (Board.inBoard(to));
 		Step step = transformStep(from, to);
-		
+		TranspositionTable.display();
 //		System.out.println((Board.getRank(from) - Board.RANK_TOP) + " " + (Board.getFile(from) - Board.FILE_LEFT)
 //				   + " " + (Board.getRank(to) - Board.RANK_TOP) + " " + (Board.getFile(to)- Board.FILE_LEFT));
 //		System.out.println("fromX: " + step.getFromX() + " fromY: " + step.getFromY() + " toX: "

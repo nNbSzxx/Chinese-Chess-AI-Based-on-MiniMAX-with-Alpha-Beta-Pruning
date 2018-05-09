@@ -50,10 +50,14 @@ public final class Search {
 		int bestVal = -Evaluator.WIN_VALUE;
 		int bestMove = NO_LEGAL_MOVE;
 		// 根节点禁止空着裁剪
-		Pruner pruner = new Pruner(position, depth);
+		Pruner pruner = new Pruner(position, depth, 0);
 		// 尝试置换表裁剪，检查置换表是否存在满足当前深度的记录，若有直接返回
 		if (pruner.isDeeplySearched()) {
-			bestMove = pruner.getRecord().getBestMove();
+			if ((pruner.getValue() >= Evaluator.WIN_VALUE - 200 && pruner.getValue() <= Evaluator.WIN_VALUE - 100) || 
+					(pruner.getValue() >= -Evaluator.WIN_VALUE + 100 && pruner.getValue() <= -Evaluator.WIN_VALUE + 200)) {
+				System.out.println("In searchRoot: trans cut, value: " + pruner.getValue());
+			}
+			bestMove = pruner.getBestMove();
 			return bestMove;
 		}
 //		System.out.println("In chess.AI.Search.searchRoot: steps " + dealer.getStepCount());
@@ -106,10 +110,14 @@ public final class Search {
 		if (position.isEnd()) {
 			return -Evaluator.WIN_VALUE + curDepth;
 		}
-		Pruner pruner = new Pruner(position, depth);
+		Pruner pruner = new Pruner(position, depth, curDepth);
 		// 尝试置换表裁剪，检查置换表是否存在满足当前深度的记录，若有直接返回
-		if (pruner.isDeeplySearched()) { 
-			return pruner.getRecord().getValue();
+		if (pruner.isDeeplySearched()) {
+			if ((pruner.getValue() >= Evaluator.WIN_VALUE - 200 && pruner.getValue() <= Evaluator.WIN_VALUE - 100) || 
+					(pruner.getValue() >= -Evaluator.WIN_VALUE + 100 && pruner.getValue() <= -Evaluator.WIN_VALUE + 200)) {
+				System.out.println("In failSoftAlphaBeta: trans cut, value: " + pruner.getValue());
+			}
+			return pruner.getValue();
 		}
 		if (depth == 0) {
 			return position.evaluate();
@@ -170,10 +178,14 @@ public final class Search {
 		if (position.isEnd()) {
 			return curDepth - Evaluator.WIN_VALUE;
 		}
-		Pruner pruner = new Pruner(position, depth);
+		Pruner pruner = new Pruner(position, depth, curDepth);
 		// 尝试置换表裁剪，检查置换表是否存在满足当前深度的记录，若有直接返回
 		if (pruner.isDeeplySearched()) {
-			return pruner.getRecord().getValue();
+			if ((pruner.getValue() >= Evaluator.WIN_VALUE - 200 && pruner.getValue() <= Evaluator.WIN_VALUE - 100) || 
+					(pruner.getValue() >= -Evaluator.WIN_VALUE + 100 && pruner.getValue() <= -Evaluator.WIN_VALUE + 200)) {
+				System.out.println("In nullMovePruning: trans cut, value: " + pruner.getValue());
+			}
+			return pruner.getValue();
 		}
 		// 注意！空着裁剪可能使得深度小于0
 		if (depth <= 0) {
