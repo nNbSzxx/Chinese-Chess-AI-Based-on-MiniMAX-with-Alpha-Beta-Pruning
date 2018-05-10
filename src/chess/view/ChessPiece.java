@@ -86,7 +86,7 @@ public class ChessPiece extends JLabel implements MouseListener {
 		
 		if (view.isRedTurn) {	//到红方走棋
 			//打印棋子的信息
-			System.out.println(this.name + " " + this.x + " " + this.y + " " + this.color + " " + this.isPiece);
+//			System.out.println(this.name + " " + this.x + " " + this.y + " " + this.color + " " + this.isPiece);
 
 			if (view.from == null && this.isPiece && this.color.equals(Color.red)) { //选中己方棋子
 				view.from = this;

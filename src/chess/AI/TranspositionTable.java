@@ -12,7 +12,11 @@ class TranspositionRecord {
 	public static enum NodeType {ALPHA, BETA, PVS};
 	NodeType type;
 	private long lock = 0;
-	private int value = -Evaluator.WIN_VALUE;
+	// 这里不能将value置为胜利值！有可能会将一个没有搜索过但是Zobrist键值为0的局面判断为胜利或失败局面！
+	// 原本是没问题的，后续修改代码使得这里出现bug，找了好久嘤嘤嘤...
+	// 这个bug告诉我们，不要试图将一个变量用作多个用途，看了书还是不长记性...
+	// 修复这个bug，打算在Table初始化时数组中全部存null
+	private int value = 0;
 	private int depth = -1;
 	private int bestMove = Search.NO_LEGAL_MOVE;
 	
@@ -70,17 +74,17 @@ public final class TranspositionTable {
 	// 命中了多少次
 	private static int hitNum = 0;
 	
-	static {
-		for (int i = 0; i < MAX_SIZE + 1; i ++) {
-			records[i] = new TranspositionRecord();
-		}
-	}
+//	static {
+//		for (int i = 0; i < MAX_SIZE + 1; i ++) {
+//			records[i] = new TranspositionRecord();
+//		}
+//	}
 	
 	// 记录
 	public static void saveRecord(Position position, TranspositionRecord record) {
 		int index = (int)(position.getZobrist().getKey()) & MAX_SIZE;
 		if (isReplace(records[index], record)) {
-			if (records[index].getDepth() == -1) {
+			if (records[index] == null) {
 				++ usedLocNum;
 			}
 			records[index] = record;
@@ -91,7 +95,10 @@ public final class TranspositionTable {
 	public static TranspositionRecord getRecord(Position position) {
 		++ queryNum;
 		int index = (int)(position.getZobrist().getKey()) & MAX_SIZE;
-		assert (records[index] != null);
+//		assert (records[index] != null);
+		if (records[index] == null) {
+			return null;
+		}
 		if (position.getZobrist().getLock() == records[index].getLock()) {
 			++ hitNum;
 			return records[index];
@@ -108,9 +115,11 @@ public final class TranspositionTable {
 	
 	// 输出置换表的状况
 	public static void display() {
-		System.out.println("In chess.AI.TranpositionTable.display: Sum of records : " 
-								+ usedLocNum + " , hitNum : " + hitNum + ", queryNum : " + queryNum + 
-								", hit ratio: " + (1.0 * hitNum / queryNum));
+		System.out.println("In chess.AI.TranpositionTable.display:");
+		System.out.println("  Sum of records : " + usedLocNum);
+		System.out.println("  hitNum : " + hitNum);
+		System.out.println("  queryNum : " + queryNum);
+		System.out.println("  hit ratio: " + (1.0 * hitNum / queryNum));
 	}
 	private TranspositionTable() {}
 

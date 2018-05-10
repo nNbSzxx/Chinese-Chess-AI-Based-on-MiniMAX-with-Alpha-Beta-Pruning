@@ -146,4 +146,7 @@ public final class Pruner {
 	public TranspositionRecord.NodeType getNodeType() {
 		return record.getType();
 	}
+	public int getRecordDepth() {
+		return record.getDepth();
+	}
 }

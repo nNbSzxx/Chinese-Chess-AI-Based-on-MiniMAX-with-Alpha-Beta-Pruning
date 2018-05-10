@@ -35,8 +35,10 @@ public final class Search {
 				break;
 			}
 		}
-		System.out.print("In chess.AI.Search.mainSearch: deepest depth " + dep + " Total nodes searched: " + count);
-		System.out.println(" Time: " + (1.0 * timeCost / 1000.0));
+		System.out.println("In chess.AI.Search.mainSearch: ");
+		System.out.println("  deepest depth " + dep);
+		System.out.println("  Total nodes searched: " + count);
+		System.out.println("  Time: " + (1.0 * timeCost / 1000.0));
 		return bestStep;
 	}
 	
@@ -53,6 +55,7 @@ public final class Search {
 		Pruner pruner = new Pruner(position, depth, 0);
 		// 尝试置换表裁剪，检查置换表是否存在满足当前深度的记录，若有直接返回
 		if (pruner.isDeeplySearched()) {
+			assert (pruner.getRecordDepth() > 0);
 			if ((pruner.getValue() >= Evaluator.WIN_VALUE - 200 && pruner.getValue() <= Evaluator.WIN_VALUE - 100) || 
 					(pruner.getValue() >= -Evaluator.WIN_VALUE + 100 && pruner.getValue() <= -Evaluator.WIN_VALUE + 200)) {
 				System.out.println("In searchRoot: trans cut, value: " + pruner.getValue());
@@ -113,6 +116,7 @@ public final class Search {
 		Pruner pruner = new Pruner(position, depth, curDepth);
 		// 尝试置换表裁剪，检查置换表是否存在满足当前深度的记录，若有直接返回
 		if (pruner.isDeeplySearched()) {
+			assert (pruner.getRecordDepth() > 0);
 			if ((pruner.getValue() >= Evaluator.WIN_VALUE - 200 && pruner.getValue() <= Evaluator.WIN_VALUE - 100) || 
 					(pruner.getValue() >= -Evaluator.WIN_VALUE + 100 && pruner.getValue() <= -Evaluator.WIN_VALUE + 200)) {
 				System.out.println("In failSoftAlphaBeta: trans cut, value: " + pruner.getValue());
@@ -181,6 +185,7 @@ public final class Search {
 		Pruner pruner = new Pruner(position, depth, curDepth);
 		// 尝试置换表裁剪，检查置换表是否存在满足当前深度的记录，若有直接返回
 		if (pruner.isDeeplySearched()) {
+			assert (pruner.getRecordDepth() > 0);
 			if ((pruner.getValue() >= Evaluator.WIN_VALUE - 200 && pruner.getValue() <= Evaluator.WIN_VALUE - 100) || 
 					(pruner.getValue() >= -Evaluator.WIN_VALUE + 100 && pruner.getValue() <= -Evaluator.WIN_VALUE + 200)) {
 				System.out.println("In nullMovePruning: trans cut, value: " + pruner.getValue());

@@ -343,7 +343,7 @@ public class ChessView extends JFrame implements MouseListener{
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		System.out.println("xx:" + e.getX() + "yy:"+e.getY());
+//		System.out.println("xx:" + e.getX() + "yy:"+e.getY());
 		
 		
 	}

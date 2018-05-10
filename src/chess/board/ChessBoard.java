@@ -73,14 +73,14 @@ public class ChessBoard {
 	// 判断棋子移动是否合法，通过调用ChessPieces类的函数实现
 	public boolean isMoveLegal(Step step) {
 		boolean isLegal = false;
-		System.out.print("In chess.board.ChessBoard.isMoveLegal: ");
+//		System.out.print("In chess.board.ChessBoard.isMoveLegal: ");
 		if (checkLegalIndexRange(step)) {
-			System.out.print("legal index range  ");
+//			System.out.print("legal index range  ");
 			if (board[step.getFromX()][step.getFromY()] != null) {
-				System.out.print("pick " + board[step.getFromX()][step.getFromY()].getName() + " ");
+//				System.out.print("pick " + board[step.getFromX()][step.getFromY()].getName() + " ");
 				isLegal = board[step.getFromX()][step.getFromY()].isLegalMove(this, step.getToX(), step.getToY());
 			} else {
-				System.out.print("pick null ");
+//				System.out.print("pick null ");
 			}
 			System.out.println("");
 		} else {
@@ -90,15 +90,15 @@ public class ChessBoard {
 					step.getToX(),   step.getToY() );
 			System.exit(-1);
 		}
-		System.out.println("Legal move is" + isLegal);
+//		System.out.println("Legal move is" + isLegal);
 		return isLegal;
 	}
 	
 	// 移动棋子，如果移动成功，返回true， 失败则返回false， 规定坐标范围为 0 to MAX - 1
 	public boolean update(Step step) {
-		System.out.print("In chess.board.ChessBoard.update: ");
-		System.out.println("from x:" + step.getFromX() + " from y:" + step.getFromY() + " to x:"
-				+ step.getToX() + " to y:" + step.getToY() + " ");
+//		System.out.print("In chess.board.ChessBoard.update: ");
+//		System.out.println("from x:" + step.getFromX() + " from y:" + step.getFromY() + " to x:"
+//				+ step.getToX() + " to y:" + step.getToY() + " ");
 		if (isMoveLegal(step)) {
 			//添加悔棋的操作
 			try {
