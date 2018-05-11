@@ -34,7 +34,7 @@ public final class Pruner {
 	// 所有棋步迭代器
 	private Iterator<Integer> iterator = null;
 	
-	public Pruner(Position position, int depth, int curDepth) {
+	public Pruner(Position position, int depth, int curDepth, int alpha, int beta) {
 		this.position = position;
 		this.depth = depth;
 		this.curDepth = curDepth;
@@ -44,9 +44,12 @@ public final class Pruner {
 		if (record != null) {
 			isSearched = true;
 			this.adjustedValue = record.getValue();
+			// 没有合法招法，则不允许取招法
 			if (record.getBestMove() == Search.NO_LEGAL_MOVE) {
 				state = GenState.DONE_TRANS;
-			} else if (adjustedValue >= Evaluator.WIN_LOWER_BOUND) {
+			}
+			// 如果是胜利局面，无论深度，直接返回
+			if (adjustedValue >= Evaluator.WIN_LOWER_BOUND) {
 				adjustedValue -= curDepth;
 				isDeeplySearched = true;
 				state = GenState.DONE_TRANS;
@@ -54,9 +57,21 @@ public final class Pruner {
 				adjustedValue += curDepth;
 				isDeeplySearched = true;
 				state = GenState.DONE_TRANS;
-			} else if (record.getDepth() >= this.depth) {
-				isDeeplySearched = true;
-				state = GenState.DONE_TRANS;
+			}
+			// 如果足够深，节点类型相符，又超出当前搜索的alpha beta范围，可以裁剪
+			else if (record.getDepth() >= this.depth) {
+				if (record.getType() == TranspositionRecord.NodeType.PVS) {
+					isDeeplySearched = true;
+					state = GenState.DONE_TRANS;
+				} else if (record.getType() == TranspositionRecord.NodeType.BETA && 
+							adjustedValue >= beta) {
+					isDeeplySearched = true;
+					state = GenState.DONE_TRANS;
+				} else if (record.getType() == TranspositionRecord.NodeType.ALPHA &&
+							adjustedValue <= alpha) {
+					isDeeplySearched = true;
+					state = GenState.DONE_TRANS;
+				}
 			}
 		} else {
 			state = GenState.DONE_TRANS;

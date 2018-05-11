@@ -9,6 +9,8 @@ package chess.AI;
  */
 
 class TranspositionRecord {
+	// 该节点是beta节点，则value值是当前节点价值的下限
+	// 该节点是alpha节点，则value值是当前节点价值的上限
 	public static enum NodeType {ALPHA, BETA, PVS};
 	NodeType type;
 	private long lock = 0;
@@ -113,6 +115,10 @@ public final class TranspositionTable {
 		return true;
 	}
 	
+	public static void initWatchVar() {
+		queryNum = 0;
+		hitNum = 0;
+	}
 	// 输出置换表的状况
 	public static void display() {
 		System.out.println("In chess.AI.TranpositionTable.display:");
