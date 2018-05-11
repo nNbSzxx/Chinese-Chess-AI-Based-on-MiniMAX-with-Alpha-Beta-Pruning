@@ -490,6 +490,18 @@ public final class MoveTable {
 	public static void main(String[] args) {
 //		MoveTable table = new MoveTable();
 //		System.out.println("No Assertion activated");
+//		int limit = 1 << Board.REAL_MAX_FILE;
+		int rankBit = (1 << 0) + (1 << 7);
+		int loc = (11 << 4) | (3);
+		int minNonCapStep = getRankSmallestNonCap(loc, rankBit);
+		int maxNonCapStep = getRankBiggestNonCap(loc, rankBit);
+		int minRookCapStep = getRankSmallestRookCap(loc, rankBit);
+		int maxRookCapStep = getRankBiggestRookCap(loc, rankBit);
+		
+		System.out.println("minNonCap: " + Board.getRank(minNonCapStep) + " " + Board.getFile(minNonCapStep));
+		System.out.println("maxNonCap: " + Board.getRank(maxNonCapStep) + " " + Board.getFile(maxNonCapStep));
+		System.out.println("minRookCapStep: " + Board.getRank(minRookCapStep) + " " + Board.getFile(minRookCapStep));
+		System.out.println("maxRookCapStep: " + Board.getRank(maxRookCapStep) + " " + Board.getFile(maxRookCapStep));
 	}
 	
 }

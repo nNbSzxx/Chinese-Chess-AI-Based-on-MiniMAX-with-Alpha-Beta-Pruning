@@ -25,6 +25,8 @@ public final class Search {
 	private static long PVCutTries = 0;
 	// 记录尝试PV裁剪失败总次数 
 	private static long PVCutfailure = 0;
+	// 根节点最佳棋步所对应价值
+	private static long rootBestValue = 0;
 	
 	public static void setThinkingTime(int mils) {
 		thinkingTime = mils;
@@ -68,6 +70,7 @@ public final class Search {
 		if (pruner.isDeeplySearched()) {
 			assert (pruner.getRecordDepth() > 0);
 			bestMove = pruner.getBestMove();
+			rootBestValue = pruner.getValue();
 			return bestMove;
 		}
 //		System.out.println("In chess.AI.Search.searchRoot: steps " + dealer.getStepCount());
@@ -105,6 +108,7 @@ public final class Search {
 			// 发生beta截断时，记录该局面
 			if (val >= beta) {
 				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, step);
+				rootBestValue = val;
 				return step;
 			}
 			if (val > bestVal) {
@@ -121,6 +125,7 @@ public final class Search {
 		} else {
 			pruner.saveRecord(TranspositionRecord.NodeType.ALPHA, bestVal, bestMove);
 		}
+		rootBestValue = bestVal;
 		return bestMove;
 	}
 
@@ -435,6 +440,7 @@ public final class Search {
 		System.out.println("  Null cut tries: " + nullCutTries);
 		System.out.println("  Null cut succeeds: " + nullCutSuccess);
 		System.out.println("  Null cut seccess ratio: " + (1.0 * nullCutSuccess / nullCutTries));
+		System.out.println("  Best move value: " + rootBestValue);
 	}
 	
 	private static boolean doAllowNullMove(Position position) {
