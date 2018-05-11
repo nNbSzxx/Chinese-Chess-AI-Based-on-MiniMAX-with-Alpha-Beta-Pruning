@@ -193,9 +193,8 @@ public final class Position {
 	}
 	
 	// 判断是否被将军
-	public boolean isChecked(int side) {
-		assert (side == Board.RED_SIDE || side == Board.BLACK_SIDE);
-		int myKing = (side == Board.RED_SIDE)? Board.RED_KING: Board.BLACK_KING;
+	public boolean isChecked() {
+		int myKing = (isRedMove)? Board.RED_KING: Board.BLACK_KING;
 		int myKingLoc = getPieceLoc(myKing);
 		assert (Board.inFort(myKingLoc));
 		
@@ -334,17 +333,47 @@ public final class Position {
 		// 把帅看作马，检查走日字后的坐标有没有马，若有马且马走到帅不蹩腿，则将军
 		for (int id = 0; id < 8; id ++) {
 			int capedPieceLoc = myKingLoc + Board.KNIGHT_STEP[id];
+			if (!Board.inBoard(capedPieceLoc)) {
+				continue;
+			}
 			int capedPiece = getPiece(capedPieceLoc);
 			if (capedPiece != 0 &&
 					!Board.isPiecesSameSide(capedPiece, myKing) &&
 					Board.getPieceType(capedPiece) == Board.KNIGHT_MASK) {
 				assert (Board.getPieceType(capedPiece) == Board.KNIGHT_MASK);
-				int reverseId = Board.getKnightReverseStepId(id);
-				assert (Board.getPieceType
-							(getPiece(MoveTable.knightMoveTable
-							[capedPieceLoc][reverseId])) == Board.KING_MASK);
-				if (getPiece(MoveTable.knightPinTable
-						[capedPieceLoc][reverseId]) == 0) {
+				int knightPin = MoveTable.getKnightPin(capedPieceLoc, myKingLoc);
+				assert (knightPin != 0);
+//				int reverseId = Board.getKnightReverseStepId(id);
+//				if (Board.getPieceType
+//							(getPiece(MoveTable.knightMoveTable
+//							[capedPieceLoc][reverseId])) != Board.KING_MASK) {
+//					System.out.println("knight piece id: " + capedPiece);
+//					System.out.println("side: " + Board.getPieceSide(capedPiece));
+//					System.out.println("knight loc: " + capedPieceLoc);
+//					System.out.println("loc rank: " + (Board.getRank(capedPieceLoc) - Board.RANK_TOP));
+//					System.out.println("loc file: " + (Board.getFile(capedPieceLoc) - Board.FILE_LEFT));
+//					
+//					System.out.println("King piece id:" + myKing);
+//					System.out.println("side: " + Board.getPieceSide(myKing));
+//					System.out.println("King loc:" + myKingLoc);
+//					System.out.println("loc rank: " + (Board.getRank(myKingLoc) - Board.RANK_TOP));
+//					System.out.println("loc file: " + (Board.getFile(myKingLoc) - Board.FILE_LEFT));
+//					
+//					System.out.println("Step id: " + id);
+//					System.out.println("Step Shift:" + Board.KNIGHT_STEP[id]);
+//					System.out.println("Reverse step id: " + reverseId);
+//					System.out.println("Reverse set shift: " + Board.KNIGHT_STEP[reverseId]);
+//					
+//					System.out.println("Table step to loc: " + MoveTable.knightMoveTable[capedPieceLoc][reverseId]);
+//					System.out.println("loc rank: " + (Board.getRank(MoveTable.knightMoveTable
+//							[capedPieceLoc][reverseId]) - Board.RANK_TOP));
+//					System.out.println("loc file:" + (Board.getFile(MoveTable.knightMoveTable
+//							[capedPieceLoc][reverseId]) - Board.FILE_LEFT));
+//				}
+//				assert (Board.getPieceType
+//							(getPiece(MoveTable.knightMoveTable
+//							[capedPieceLoc][reverseId])) == Board.KING_MASK);
+				if (getPiece(knightPin) != 0) {
 					return true;
 				}
 			}

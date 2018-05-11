@@ -144,7 +144,42 @@ public final class MoveTable {
 	public static final int rankMask[] = new int[Board.BOARD_SIZE];
 	// 棋盘上每个格子在当前列所在的行的位置，以位串形式表示
 	public static final int fileMask[] = new int[Board.BOARD_SIZE];
-	
+	// 根据from和to坐标给出马腿，马腿表
+	private static final int KNIGHT_PIN_TABLE[] = new int[]{
+									0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,-16,  0,-16,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0, -1,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0, -1,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0, 16,  0, 16,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0
+	};
 	static {
 		makeStraightPieceTable();
 		makeOtherPieceTable();
@@ -396,13 +431,15 @@ public final class MoveTable {
     		pawnMoveTable[i][from][cnt] = 0;
     	}
 	}
-	private static int getKnightPin(int from, int to) {
+	public static int getKnightPin(int from, int to) {
+		int way1 = from + KNIGHT_PIN_TABLE[to - from + Board.BOARD_SIZE];
+		int way2;
 		if (Math.abs(from - to) == Board.rankDis(2) + 1 || 
 				Math.abs(from - to) == Board.rankDis(2) - 1) {
 			if (Board.getRank(from) - Board.getRank(to) == 2) {
-				return from - Board.rankDis(1);
+				way2 = from - Board.rankDis(1);
 			} else if (Board.getRank(from) - Board.getRank(to) == -2){
-				return from + Board.rankDis(1);
+				way2 = from + Board.rankDis(1);
 			} else {
 				assert false;
 				return -1;
@@ -410,9 +447,9 @@ public final class MoveTable {
 		} else if (Math.abs(from - to) == Board.rankDis(1) + 2 ||
 				Math.abs(from - to) == Board.rankDis(1) - 2) {
 			if (Board.getFile(from) - Board.getFile(to) == 2) {
-				return from - 1;
+				way2 =  from - 1;
 			} else if (Board.getFile(from) - Board.getFile(to) == -2) {
-				return from + 1;
+				way2 =  from + 1;
 			} else {
 				assert false;
 				return -1;
@@ -421,6 +458,8 @@ public final class MoveTable {
 			assert (false) : "Wrong In Generate Knight Pin!";
 			return -1;
 		}
+		assert (way1 == way2); 
+		return way1;
 	}
 	// 以上使步法generate方法
 	
@@ -439,7 +478,13 @@ public final class MoveTable {
 				Math.abs(x - y) == 0x12 || Math.abs(x - y) == 0x0e);
 	}
 	
+	
+	
+	
+	
 	private MoveTable() {}
+	
+	
 	
 	// 测试
 	public static void main(String[] args) {

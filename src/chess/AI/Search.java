@@ -243,7 +243,7 @@ public final class Search {
 		int bestVal = -Evaluator.WIN_VALUE;
 		int bestMove = NO_LEGAL_MOVE;
 		// 尝试空着裁剪
-		if (allowNullCut && beta != Evaluator.WIN_VALUE && doAllowNullMove(position)) {
+		if (allowNullCut && beta != Evaluator.WIN_VALUE && doAllowNullMove(position) && !position.isChecked()) {
 			position.makeNullMove();
 			++ nullCutTries;
 			// 执行一个空着实际上只把当前局面距离根节点的深度加了1
