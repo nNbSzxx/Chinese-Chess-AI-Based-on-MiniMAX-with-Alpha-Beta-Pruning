@@ -69,6 +69,10 @@ public final class Search {
 		// 尝试置换表裁剪，检查置换表是否存在满足当前深度的记录，若有直接返回
 		if (pruner.isDeeplySearched()) {
 			assert (pruner.getRecordDepth() > 0);
+			// 此时输出产生裁剪的置换表信息
+			if (depth > 10) {
+				pruner.displayTransRecord();
+			}
 			bestMove = pruner.getBestMove();
 			rootBestValue = pruner.getValue();
 			return bestMove;
@@ -88,7 +92,7 @@ public final class Search {
 			// 如果证明并非如此，则要重新搜索全部节点
 			int val;
 			// 当前还没找到PV节点，做正常的alpha-beta搜索
-			if (bestVal <= alpha) {
+			if (bestVal < alpha || bestMove == NO_LEGAL_MOVE) {
 				val = -PVSearch(depth - 1, -beta, -alpha, position, 1);
 			}
 			// 否则，做检查，当前招法是否比PV招法好
@@ -107,6 +111,8 @@ public final class Search {
 			position.undoMove();
 			// 发生beta截断时，记录该局面
 			if (val >= beta) {
+				// 记录当前搜索信息
+//				pruner.setDebugVar(alpha, beta, "searchRoot");
 				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, step);
 				rootBestValue = val;
 				return step;
@@ -121,8 +127,10 @@ public final class Search {
 		}
 		// 记录当前局面
 		if (bestVal >= alpha) {
+//			pruner.setDebugVar(alpha, beta, "searchRoot");
 			pruner.saveRecord(TranspositionRecord.NodeType.PVS, bestVal, bestMove);
 		} else {
+//			pruner.setDebugVar(alpha, beta, "searchRoot");
 			pruner.saveRecord(TranspositionRecord.NodeType.ALPHA, bestVal, bestMove);
 		}
 		rootBestValue = bestVal;
@@ -149,21 +157,21 @@ public final class Search {
 		int bestVal = -Evaluator.WIN_VALUE;
 		int bestMove = NO_LEGAL_MOVE;
 		// 尝试空着裁剪
-		if (beta != Evaluator.WIN_VALUE && doAllowNullMove(position)) {
-			++ nullCutTries;
-			position.makeNullMove();
-			// 执行一个空着实际上只把当前局面距离根节点的深度加了1
-			// 核心思想是如果当前我不下棋依然能得到beta截断，那么说明这个局面非常好
-			// 不过此时没有最佳招法
-			int val = -limitWindowSearch(depth - 1 - NULL_MOVE_SKIP, -beta + 1, position, curDepth + 1, false);
-			position.undoNullMove();
-			if (val >= beta) {
-				// 裁剪成功
-				++ nullCutSuccess;
-				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, 0);
-				return val;
-			}
-		}
+//		if (beta != Evaluator.WIN_VALUE && doAllowNullMove(position) && !position.isChecked()) {
+//			++ nullCutTries;
+//			position.makeNullMove();
+//			// 执行一个空着实际上只把当前局面距离根节点的深度加了1
+//			// 核心思想是如果当前我不下棋依然能得到beta截断，那么说明这个局面非常好
+//			// 不过此时没有最佳招法
+//			int val = -limitWindowSearch(depth - 1 - NULL_MOVE_SKIP, -beta + 1, position, curDepth + 1, false);
+//			position.undoNullMove();
+//			if (val >= beta) {
+//				// 裁剪成功
+//				++ nullCutSuccess;
+//				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, 0);
+//				return val;
+//			}
+//		}
 		// 尝试招法
 		for (int step = pruner.getAStep(); step != NO_LEGAL_MOVE; step = pruner.getAStep()) {
 			assert (step != NO_LEGAL_MOVE);
@@ -179,7 +187,7 @@ public final class Search {
 			// 如果证明并非如此，则要重新搜索全部节点
 			int val;
 			// 当前还没找到PV节点，做正常的alpha-beta搜索
-			if (bestVal <= alpha) {
+			if (bestVal < alpha || bestMove == NO_LEGAL_MOVE) {
 				val = -PVSearch(depth - 1, -beta, -alpha, position, curDepth + 1);
 			}
 			// 否则，做检查，当前招法是否比PV招法好
@@ -198,6 +206,7 @@ public final class Search {
 			position.undoMove();
 			// 发生beta截断时，记录该局面
 			if (val >= beta) {
+//				pruner.setDebugVar(alpha, beta, "PVSearch");
 				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, step);
 				return val;
 			}
@@ -211,8 +220,10 @@ public final class Search {
 		}
 		// 记录当前局面
 		if (bestVal >= alpha) {
+//			pruner.setDebugVar(alpha, beta, "PVSearch");
 			pruner.saveRecord(TranspositionRecord.NodeType.PVS, bestVal, bestMove);
 		} else {
+//			pruner.setDebugVar(alpha, beta, "PVSearch");
 			pruner.saveRecord(TranspositionRecord.NodeType.ALPHA, bestVal, bestMove);
 		}
 		return bestVal;
@@ -258,6 +269,7 @@ public final class Search {
 			if (val >= beta) {
 				// 裁剪成功
 				++ nullCutSuccess;
+//				pruner.setDebugVar(beta - 1, beta, "nullSearch");
 				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, 0);
 				return val;
 			}
@@ -276,6 +288,7 @@ public final class Search {
 			position.undoMove();
 			// 发生beta截断时，记录该局面
 			if (val >= beta) {
+//				pruner.setDebugVar(beta - 1, beta, "limitWindowSearch");
 				pruner.saveRecord(TranspositionRecord.NodeType.BETA, val, step);
 				return val;
 			}
@@ -285,6 +298,7 @@ public final class Search {
 			}
 		}
 		// 记录当前局面
+//		pruner.setDebugVar(beta - 1, beta, "limitWindowSearch");
 		pruner.saveRecord(TranspositionRecord.NodeType.ALPHA, bestVal, bestMove);
 		return bestVal;
 	}

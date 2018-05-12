@@ -21,6 +21,15 @@ class TranspositionRecord {
 	private int value = 0;
 	private int depth = -1;
 	private int bestMove = Search.NO_LEGAL_MOVE;
+	// 调试变量
+//	// 记录是从哪个搜索中搜到的
+//	private String from;
+//	// 搜索时的alpha值
+//	private int alpha;
+//	// 搜索时的beta值
+//	private int beta;
+//	// 搜索类型
+//	private String searchType;
 	
 	public TranspositionRecord(NodeType type, long lock, int value, int depth, int bestMove) {
 		this.type = type;
@@ -62,6 +71,31 @@ class TranspositionRecord {
 	public void setDepth(int depth) {
 		this.depth = depth;
 	}
+//	public String getFrom() {
+//		return from;
+//	}
+//	public void setFrom(String from) {
+//		this.from = from;
+//	}
+	// 测试变量的getter setter
+//	public int getAlpha() {
+//		return alpha;
+//	}
+//	public int getBeta() {
+//		return beta;
+//	}
+//	public void setAlpha(int alpha) {
+//		this.alpha = alpha;
+//	}
+//	public void setBeta(int beta) {
+//		this.beta = beta;
+//	}
+//	public String getSearchType() {
+//		return searchType;
+//	}
+//	public void setSearchType(String searchType) {
+//		this.searchType = searchType;
+//	}
 	
 }
 
