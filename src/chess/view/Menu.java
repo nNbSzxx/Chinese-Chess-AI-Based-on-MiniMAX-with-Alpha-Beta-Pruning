@@ -25,7 +25,7 @@ public class Menu extends JPanel implements ActionListener,ItemListener{
 	
 	private JButton reset;
 	private JButton back;
-	private JButton check;
+	//private JButton check;
 	private Icon icon1;
 	private Icon icon2;
 	private Icon icon3;
@@ -64,7 +64,7 @@ public class Menu extends JPanel implements ActionListener,ItemListener{
 		
 		reset = new JButton(icon1);
 		back = new JButton(icon2);
-		check = new JButton(icon3);
+		//check = new JButton(icon3);
 
 		reset.setBorder(null);
 		reset.setBorderPainted(false);
@@ -72,13 +72,13 @@ public class Menu extends JPanel implements ActionListener,ItemListener{
 		back.setBorder(null);
 		back.setBorderPainted(false);
 		
-		check.setBorder(null);
-		check.setBorderPainted(false);
+		//check.setBorder(null);
+		//check.setBorderPainted(false);
 		
 		
 		reset.addActionListener(this);
 		back.addActionListener(this);
-		check.addActionListener(this);
+		//check.addActionListener(this);
 
 		
 		levelList = new JComboBox<Icon>(levelListPic);
@@ -95,7 +95,7 @@ public class Menu extends JPanel implements ActionListener,ItemListener{
 		
 		this.add(levelList);
 		
-		this.add(check);
+		//this.add(check);
 		this.setSize(100, 700);
 	}
 		
@@ -117,8 +117,6 @@ public class Menu extends JPanel implements ActionListener,ItemListener{
 		}else if(e.getSource()==back){
 			if(view.isRedTurn)
 				view.back();
-		}else if(e.getSource()==check){
-			view.check();
 		}
 		
 		
